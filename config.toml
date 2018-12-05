@@ -1,0 +1,89 @@
+baseurl = "https://csaybar.github.io"
+DefaultContentLanguage = "en"
+title = "Algorithms & Maps"
+theme = "beautifulhugo"
+metaDataFormat = "yaml"
+pygmentsStyle = "trac"
+pygmentsUseClasses = true
+pygmentsCodeFences = true
+pygmentsCodefencesGuessSyntax = true
+#pygmentsUseClassic = true
+#pygmentOptions = "linenos=inline"
+#disqusShortname = "XXX"
+#googleAnalytics = "XXX"
+
+[Params]
+#  homeTitle = "Beautiful Hugo Theme" # Set a different text for the header on the home page
+  subtitle = "A Blog about Geocomputation"
+  logo = "img/me.jpg" # Expecting square dimensions
+  favicon = "img/oldpython.png"
+  dateFormat = "January 2, 2006"
+  commit = false
+  rss = true
+  comments = true
+  readingTime = true
+  wordCount = true
+  useHLJS = true
+  socialShare = true
+  delayDisqus = true
+  showRelatedPosts = true
+#  gcse = "012345678901234567890:abcdefghijk" # Get your code from google.com/cse. Make sure to go to "Look and Feel" and change Layout to "Full Width" and Theme to "Classic"
+
+[[Params.bigimg]]
+  src = "img/header.gif"
+  desc = "Voronoi"
+  position = "center top"
+
+[Author]
+  name = "Cesar Aybar"
+  website = "csaybar.github.io"
+  email = "csaybar@gmail.com"
+  facebook = "cesarluis.aybarcamacho.1"
+  github = "csaybar"
+  gitlab = "csaybar"
+  reddit = "csaybar"
+[[menu.main]]
+    name = "Blog"
+    url = ""
+    weight = 1
+
+[[menu.main]]
+    name = "About"
+    url = "page/about/"
+    weight = 3
+
+[[menu.main]]
+    parent = "Research"
+    name = "PISCOp"
+    url = "https://piscop.netlify.com/"
+    weight = 1
+
+[[menu.main]]
+    parent = "Resources"
+    name = "Earth Engine with Python"
+    url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
+    weight = 1
+
+[[menu.main]]
+    parent = "Resources"
+    name = "Maps for Fun!"
+    url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
+    weight = 2
+
+[[menu.main]]
+    parent = "Resources"
+    name = "ML from scratch"
+    url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
+    weight = 3
+
+[[menu.main]]
+    parent = "Resources"
+    name = "Cheat sheets for data scientists"
+    url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
+    weight = 4
+
+
+[[menu.main]]
+    name = "Presentations"
+    url = ""
+    weight = 3
