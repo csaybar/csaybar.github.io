@@ -1,0 +1,223 @@
+---
+title: "Raster resampling in R"
+author: "Cesar Aybar"
+date: '2018-12-05'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Intro
+A typical workflow for earth analysts always will have to do with several spatial data sources (e.g. Sentinel, MODIS and Landsat) each one with a particular extent and pixel resolution. **Resampling** is the technique used to *homogenize* these spatial attributes.
+
+![Image obtained from [here](http://desktop.arcgis.com/en/arcmap/latest/extensions/spatial-analyst/performing-analysis/cell-size-and-resampling-in-analysis.htm)](http://desktop.arcgis.com/en/arcmap/latest/extensions/spatial-analyst/performing-analysis/GUID-F4B313D5-9585-4687-B5EE-37E9C9243EBE-web.png)
+
+This post demonstrate how easy and incredibly fast is resampling gridded data in R using the [raster](https://cran.r-project.org/web/packages/raster/index.html)
+ and [gdalUtils](https://cran.r-project.org/web/packages/gdalUtils/index.html) packages. If you do not familiarize with they , first, look at this [tutorial](https://geoscripting-wur.github.io/IntroToRaster/) or run in R:
+```{r eval=F}
+vignette("functions", package = "raster") # Run me in R!
+```
+While `raster` package allow to perform fast operation thanks to optimized back-end C code, some raster manipulation techniques such as `raster::resample()` can become incredibly slow as the raster size increase. A effective alternative but a little more complicated to code is use a **wrapper library** (gdalUtils).
+
+## 2. Wrapper libraries
+
+In few words, a *wrapper* library (not confuse with a binding library) is a piece of code which translate a library's existing (e.g GDAL) into a different interface (e.g an R package). The main advantage is that you will use GDAL in its original language (C++).  Check it [this](https://stackoverflow.com/questions/8628326/what-is-the-difference-between-a-wrapper-bindings-and-a-port) for a more comprehensible explanation.
+
+## 3. Demo
+Get the climatological gridded rainfall dataset [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf) (~10 km) for [Arequipa](https://en.wikipedia.org/wiki/Arequipa_Region) and change the pixel size to ~0.5 km.
+ 
+
+**Before coding do not forget install and load the packages!**
+```{r load libs, warning=FALSE,message=FALSE}
+library('raster')
+library('ggplot2')
+library('gdalUtils')
+library('rasterVis')
+library('sf')
+library('kableExtra')
+library('mapview')
+library('future')
+library('purrr') # ex girlfriend
+library('furrr') # new girlfriend
+library('tidyverse')
+```
+
+### 3.1 Downloading PISCOpclim
+```{r getdata, eval = TRUE, echo = TRUE, message = FALSE}
+user <- 'publi_dgh2' # ftp user 
+pass <- '123456'   # ftp user
+ftp <- 'ftp.senamhi.gob.pe/PISCOp_V2.1_beta/' # url
+dir <- 'PISCOp_climatology/PISCOp_climatology/' # urn
+months <- sprintf('%02d',1:12) # GEOtiff names
+clim <- sprintf('ftp://%s:%s@%s%s%s.tif', user, pass, ftp, dir,months)
+
+ftp_n <- mapply(download.file, clim,basename(clim),quiet = TRUE)
+```
+
+### 3.2 Creating a rasterStack
+
+```{r Rstack,echo = TRUE, eval = TRUE, message = FALSE}
+clim_stack <- stack(basename(clim)) %>% 
+  'names<-'(month.abb) # change the RasterLayer names
+
+cols <- brewer.pal(11, "RdBu") #palette
+range <- seq(-1, 800, 100) # Precipitation range
+levelplot(clim_stack, par.settings=GrTheme(),at=range)
+```
+
+### 3.3 Arequipa Region
+```{r eval = TRUE,echo = TRUE, message = FALSE}
+# Creating a polygon of the PISCOp extent
+piscop_extent <- clim_stack[[1]] %>% 
+                  extent %>% 
+                  raster(nrows=1,ncols=1) %>% 
+                  as('SpatialPolygons') %>% 
+                  st_as_sf()
+
+piscop_extent$NOMBRE = 'PISCOp extent'
+
+arequipa <- st_read('arequipa_simply.shp', quiet = TRUE)
+m_01 <- mapview(arequipa)
+m_02 <- mapview(piscop_extent, fill=NA)
+
+m_01 + m_02
+```
+
+
+### 3.4 Method 01: Resampling via `raster` package
+
+```{r eval=TRUE, echo = TRUE}
+raster_base <- crop(clim_stack[[1]], arequipa)
+res(raster_base) <- 0.05
+
+system.time(
+clim_1_a <- resample(clim_stack,raster_base,method='bilinear')
+)
+
+plot(clim_1_a[[1]], main = 'Jan Precipitation in Arequipa')
+plot(as(arequipa,'Spatial'),add=T)
+```
+
+
+
+### 3.5 Method 02: Resampling via `gdalUtils` package
+
+```{r gdalwarp, eval=TRUE, echo = TRUE}
+#' Resampling a Raster* object via GDAL
+#' 
+#' @param r Raster* object to be resampled
+#' @param r_base Raster* object with parameters that r
+#' should be resampled to.
+#' @param method Character. GDAL resampling_method
+#' ("near"|"bilinear"|"cubic"|"cubicspline"|
+#'  "lanczos"|"average"|"mode"|"max"|"min"|
+#'  "med"|"q1"|"q3")
+#'
+#' @export
+gdal_resample <- function(r,r_base,method='bilinear') {
+  
+  #Geometry attributes
+  t1 <- c(xmin(r_base), ymin(r_base), 
+          xmax(r_base), ymax(r_base))
+  res <- res(r_base)
+  
+  #Temporal files
+  tmp_outname <- sprintf('%s.tif',tempfile())
+  tmp_inname <- sprintf('%s.tif',tempfile())
+  writeRaster(r,tmp_inname)
+  
+  #GDAL time!
+  gdalwarp(tmp_inname,tmp_outname,tr=res,te=t1,r = method)
+  resample_raster = raster(tmp_outname)
+  mapply(file.remove,c(tmp_inname,tmp_outname))
+  return(resample_raster)
+}
+```
+
+**Sequential approach**
+```{r seq, eval = TRUE, echo = TRUE}
+system.time(
+clim_1_b <- names(clim_stack) %>% 
+  map(~ gdal_resample(clim_stack[[.x]],raster_base)) %>%
+  stack()
+)
+
+plot(clim_1_a[[1]], main = 'Jan Precipitation in Arequipa')
+plot(as(arequipa,'Spatial'),add=T)
+```
+
+**Multiprocess approach**
+
+```{r mypc, eval = TRUE, echo = TRUE}
+message(sprintf('%s \n',system('lscpu',intern = T)))
+```
+
+
+```{r, eval = TRUE, echo = TRUE}
+plan(multiprocess)
+```
+
+```{r}
+system.time(
+clim_1_b <- names(clim_stack) %>% 
+  future_map(~ gdal_resample(clim_stack[[.x]],raster_base)) %>%
+  stack()
+)
+plot(clim_1_a[[1]], main = 'Jan Precipitation in Arequipa')
+plot(as(arequipa,'Spatial'),add=T)
+```
+
+
+## raster vs gdalUtils Comparison (Simple Benckmark)
+```{r eval = F}
+cell_size <- c(0.05,0.025,0.01,0.005,0.0025,0.001)
+
+
+for(x in cell_size) { 
+  
+  raster_base <- crop(clim_stack[[1]], arequipa)
+  res(raster_base) <- x
+
+  time_m01 <- system.time(
+    clim_1_a <- resample(clim_stack[[1:4]],
+                         raster_base,
+                         method='bilinear'))
+
+  time_m02 <- system.time(
+    clim_1_b <- names(clim_stack)[1:4] %>% 
+      map(~ gdal_resample(clim_stack[[.x]],raster_base)) %>%
+      stack())
+
+  time_m03 <- system.time(
+    clim_1_c <- names(clim_stack)[1:4] %>% 
+      future_map(~ gdal_resample(clim_stack[[.x]],
+                                 raster_base)) %>%
+      stack())
+  
+  df_size <- data_frame(
+    pixel_size = x,
+    npixels = ncell(clim_1_a)*12,
+    raster = time_m01[3],
+    gdalUtils = time_m02[3],
+    gdalUtils_4par = time_m03[3]
+  )
+  if (x == 0.05) {
+    df_base <- df_size
+  } else {
+    df_base <- bind_rows(df_base, df_size)
+  }
+}
+```
+```{r eval = F}
+kable(df_base)
+df_base %>%
+  gather(package,time,-npixels,-pixel_size) %>% 
+  ggplot(aes(x=npixels,y=time,color=package))+
+  geom_line()+
+  geom_point()
+```
+
