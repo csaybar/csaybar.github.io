@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Algorithms &amp; Maps</title>
-    <link>https://csaybar.github.io/</link>
+    <link>/</link>
     <description>Recent content on Algorithms &amp; Maps</description>
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
     <lastBuildDate>Wed, 05 Dec 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://csaybar.github.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Raster resampling in R</title>
-      <link>https://csaybar.github.io/post/elegant_resample/</link>
+      <link>/post/elegant_resample/</link>
       <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>https://csaybar.github.io/post/elegant_resample/</guid>
+      <guid>/post/elegant_resample/</guid>
       <description>1. Intro A typical workflow for earth analysts always will have to do with several spatial data sources (e.g. Sentinel, MODIS and Landsat) each one with a particular extent and pixel resolution. Resampling is the technique used to homogenize these spatial attributes.
 Image obtained from here
  This post demonstrate how easy and incredibly fast is resampling gridded data in R using the raster and gdalUtils packages.</description>
@@ -25,10 +25,10 @@ Image obtained from here
     
     <item>
       <title>About me</title>
-      <link>https://csaybar.github.io/page/about/</link>
+      <link>/page/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>https://csaybar.github.io/page/about/</guid>
+      <guid>/page/about/</guid>
       <description>Looking back ~5 years ago, there was one thing which diversified my thoughts and changes the course of my career: Discover Linux and installs Debian Wheezy on my old computer (a Pentium 4). After that one thing led to another.
 I am passionate about data that nowadays works at SENAMHI solving complex problems, always in the best possible way. When I&amp;rsquo;m not in the office coding or writing reports. I am playing the violin (although without much success … for now!</description>
     </item>

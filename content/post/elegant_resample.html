@@ -105,7 +105,7 @@ system.time(
 clim_1_a &lt;- resample(clim_stack,raster_base,method=&#39;bilinear&#39;)
 )</code></pre>
 <pre><code>##    user  system elapsed 
-##   7.684   0.008   7.762</code></pre>
+##   6.992   0.008   7.003</code></pre>
 <pre class="r"><code>plot(clim_1_a[[1]], main = &#39;Jan Precipitation in Arequipa&#39;)
 plot(as(arequipa,&#39;Spatial&#39;),add=T)</code></pre>
 <p><img src="/post/elegant_resample_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
@@ -148,7 +148,7 @@ clim_1_b &lt;- names(clim_stack) %&gt;%
   stack()
 )</code></pre>
 <pre><code>##    user  system elapsed 
-##  14.456   1.772  16.818</code></pre>
+##  12.700   1.440  14.372</code></pre>
 <pre class="r"><code>plot(clim_1_a[[1]], main = &#39;Jan Precipitation in Arequipa&#39;)
 plot(as(arequipa,&#39;Spatial&#39;),add=T)</code></pre>
 <p><img src="/post/elegant_resample_files/figure-html/seq-1.png" width="672" /></p>
@@ -168,10 +168,10 @@ plot(as(arequipa,&#39;Spatial&#39;),add=T)</code></pre>
 ## Model:                 60 
 ## Model name:            Intel(R) Core(TM) i5-4200M CPU @ 2.50GHz 
 ## Stepping:              3 
-## CPU MHz:               2431.182 
+## CPU MHz:               3003.082 
 ## CPU max MHz:           3100.0000 
 ## CPU min MHz:           800.0000 
-## BogoMIPS:              4988.37 
+## BogoMIPS:              4988.89 
 ## Virtualization:        VT-x 
 ## L1d cache:             32K 
 ## L1i cache:             32K 
@@ -186,7 +186,7 @@ clim_1_b &lt;- names(clim_stack) %&gt;%
   stack()
 )</code></pre>
 <pre><code>##    user  system elapsed 
-##  12.652   2.164  10.304</code></pre>
+##   0.132   0.036   9.048</code></pre>
 <pre class="r"><code>plot(clim_1_a[[1]], main = &#39;Jan Precipitation in Arequipa&#39;)
 plot(as(arequipa,&#39;Spatial&#39;),add=T)</code></pre>
 <p><img src="/post/elegant_resample_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
