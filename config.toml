@@ -12,6 +12,8 @@ pygmentsCodefencesGuessSyntax = true
 disqusShortname = "cesaraybar"
 googleAnalytics = "UA-130564182-1"
 relativeurls = false
+publishDir = "../csaybar.github.io"
+
 
 [Params]
 #  homeTitle = "Beautiful Hugo Theme" # Set a different text for the header on the home page
