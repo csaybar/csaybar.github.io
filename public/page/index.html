@@ -59,6 +59,17 @@
 
 
 
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-130564182-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
 
   </head>
   <body>
@@ -90,8 +101,13 @@
           
         
           
-            <li>
-              <a title="Presentations" href="/">Presentations</a>
+            <li class="navlinks-container">
+              <a class="navlinks-parent">Presentations</a>
+              <div class="navlinks-children">
+                
+                  <a href="https://csaybar.github.io/flood_slides/flood_senamhi.html">Peru-floods</a>
+                
+              </div>
             </li>
           
         
@@ -381,6 +397,28 @@ I am passionate about data that nowadays works at SENAMHI solving complex proble
 
 
 
+
+
+
+<script type="text/javascript">
+$(function(){
+  $('#show-comments').on('click', function(){
+    var disqus_shortname = 'csaybar';
+      
+    (function() {
+      var disqus = document.createElement('script'); 
+      disqus.type = 'text/javascript'; 
+      disqus.async = true;
+      disqus.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(disqus);
+    })();
+      
+    $(this).hide(); 
+    });
+  });
+      
+</script>
+<script id="dsq-count-scr" src="//csaybar.disqus.com/count.js" async></script>
 
 
 

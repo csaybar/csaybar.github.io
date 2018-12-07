@@ -7,9 +7,6 @@ pygmentsStyle = "trac"
 pygmentsUseClasses = true
 pygmentsCodeFences = true
 pygmentsCodefencesGuessSyntax = true
-canonifyurls = true
-relativeURLs = true
-publishDir = "../csaybar.github.io"
 #pygmentsUseClassic = true
 #pygmentOptions = "linenos=inline"
 disqusShortname = "csaybar"
