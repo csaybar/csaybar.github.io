@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Math on Algorithms &amp; Maps</title>
+    <title>Math on Beautiful Hugo</title>
     <link>/tags/math/</link>
-    <description>Recent content in Math on Algorithms &amp; Maps</description>
+    <description>Recent content in Math on Beautiful Hugo</description>
     <generator>Hugo -- gohugo.io</generator>
-    <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
-    <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
+    <managingEditor>youremail@domain.com (Some Person)</managingEditor>
+    <webMaster>youremail@domain.com (Some Person)</webMaster>
     <lastBuildDate>Sun, 05 Mar 2017 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/math/index.xml" rel="self" type="application/rss+xml" />
@@ -16,7 +16,7 @@
       <title>Math Sample</title>
       <link>/post/2017-03-05-math-sample/</link>
       <pubDate>Sun, 05 Mar 2017 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <author>youremail@domain.com (Some Person)</author>
       <guid>/post/2017-03-05-math-sample/</guid>
       <description>&lt;p&gt;KaTeX can be used to generate complex math formulas server-side.&lt;/p&gt;
 
