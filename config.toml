@@ -12,8 +12,8 @@ relativeURLs = true
 publishDir = "../csaybar.github.io"
 #pygmentsUseClassic = true
 #pygmentOptions = "linenos=inline"
-#disqusShortname = "XXX"
-#googleAnalytics = "XXX"
+disqusShortname = "csaybar"
+googleAnalytics = "UA-130564182-1"
 
 [Params]
 #  homeTitle = "Beautiful Hugo Theme" # Set a different text for the header on the home page
