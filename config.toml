@@ -11,6 +11,7 @@ pygmentsCodefencesGuessSyntax = true
 #pygmentOptions = "linenos=inline"
 disqusShortname = "cesaraybar"
 googleAnalytics = "UA-130564182-1"
+relativeurls = false
 
 [Params]
 #  homeTitle = "Beautiful Hugo Theme" # Set a different text for the header on the home page
