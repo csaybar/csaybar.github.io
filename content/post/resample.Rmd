@@ -8,7 +8,7 @@ output:
     toc_float: true
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,eval=FALSE)
 ```
 
 ## 1. Intro
@@ -18,7 +18,7 @@ A typical workflow for earth analysts always will have to do with several spatia
 
 This post demonstrate how easy and incredibly fast is resampling gridded data in R using the [raster](https://cran.r-project.org/web/packages/raster/index.html)
  and [gdalUtils](https://cran.r-project.org/web/packages/gdalUtils/index.html) packages. If you do not familiarize with they , first, look at this [tutorial](https://geoscripting-wur.github.io/IntroToRaster/) or run in R:
-```{r eval=F}
+```{r vignette}
 vignette("functions", package = "raster") # Run me in R!
 ```
 While `raster` package allow to perform fast operation thanks to optimized back-end C code, some raster manipulation techniques such as `raster::resample()` can become incredibly slow as the raster size increase. A effective alternative but a little more complicated to code is use a **wrapper library** (gdalUtils).
@@ -28,49 +28,115 @@ While `raster` package allow to perform fast operation thanks to optimized back-
 In few words, a *wrapper* library (not confuse with a binding library) is a piece of code which translate a library's existing (e.g GDAL) into a different interface (e.g an R package). The main advantage is that you will use GDAL in its original language (C++).  Check it [this](https://stackoverflow.com/questions/8628326/what-is-the-difference-between-a-wrapper-bindings-and-a-port) for a more comprehensible explanation.
 
 ## 3. Demo
-Get the climatological gridded rainfall dataset [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf) (~10 km) for [Arequipa](https://en.wikipedia.org/wiki/Arequipa_Region) and change the pixel size to ~0.5 km.
- 
+Get the climatological gridded rainfall dataset [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf) (~10 km) for [Arequipa](https://en.wikipedia.org/wiki/Arequipa_Region) and change the pixel size to ~0.5 km. 
 
-**Before coding do not forget install and load the packages!**
-```{r load libs, warning=FALSE,message=FALSE}
-library('raster')
+### 3.1 Libraries
+Before coding do not forget install and load the following packages!.
+
+#####Data Vizualization libraries
+```{r plot_libs, warning=FALSE, message=FALSE, eval = TRUE}
 library('ggplot2')
-library('gdalUtils')
+library('plotly')
+library('cptcity')
 library('rasterVis')
-library('sf')
-library('kableExtra')
 library('mapview')
-library('future')
-library('purrr') # ex girlfriend
-library('furrr') # new girlfriend
+library('kableExtra')
+```
+
+#####R as a GIS
+```{r GIS, warning=FALSE, message=FALSE, eval = TRUE}
+library('gdalUtils')
+library('sf')
+library('raster')
+```
+
+#####Functional programming and tidyverse
+```{r load_libs, warning=FALSE, message=FALSE, eval = TRUE}
+library('purrr')
+library('furrr')
 library('tidyverse')
 ```
 
-### 3.1 Downloading PISCOpclim
-```{r getdata, eval = FALSE, echo = TRUE, message = FALSE}
+### 3.2 Downloading/Stacking PISCOpclim
+```{r getdata, message = FALSE}
 user <- 'publi_dgh2' # ftp user 
 pass <- '123456'   # ftp user
 ftp <- 'ftp.senamhi.gob.pe/PISCOp_V2.1_beta/' # url
 dir <- 'PISCOp_climatology/PISCOp_climatology/' # urn
 months <- sprintf('%02d',1:12) # GEOtiff names
+
 clim <- sprintf('ftp://%s:%s@%s%s%s.tif', user, pass, ftp, dir,months)
 
-ftp_n <- mapply(download.file, clim,basename(clim),quiet = TRUE)
+td <- tempdir() #temporal dir
+tmp_files <- sprintf('%s%s', td, basename(clim))
+
+ftp_n <- mapply(download.file, clim,tmp_files,quiet = TRUE)
+
+clim_stack <- stack(tmp_files) %>% 
+  'names<-'(month.abb) %>% '*'(1) # change the RasterLayer names
+clim_stack[clim_stack <= 0] <- 0
+storage.mode(clim_stack[]) = "integer" #round to an integer
+
+mapply(file.remove, tmp_files)
 ```
 
-### 3.2 Creating a rasterStack
+### 3.2 Downloading/Uncompressing geometries
 
-```{r Rstack,echo = TRUE, eval = FALSE, message = FALSE}
-clim_stack <- stack(basename(clim)) %>% 
-  'names<-'(month.abb) # change the RasterLayer names
-
-cols <- brewer.pal(11, "RdBu") #palette
-range <- seq(-1, 800, 100) # Precipitation range
-levelplot(clim_stack, par.settings=GrTheme(),at=range)
+```{r down_geom, message=F}
+webpage_github <- 'https://github.com/csaybar/csaybar.github.io/'
+file <- 'raw/master/data/post01.zip'
+link <- sprintf('%s%s', webpage_github, file)
+fn <- sprintf('%s.zip', tempfile())
+download.file(link,fn)
+td <- tempdir()
+unzip(fn, ex = td)
 ```
 
-### 3.3 Arequipa Region
-```{r eval = FALSE,echo = TRUE, message = FALSE}
+
+### 3.3 Visualizing PISCOpclim
+
+```{r viz, message = FALSE}
+
+name_sud <- sprintf('%s/sud_peru_2.shp', td)
+sud_sp <- st_read(name_sud, quiet = TRUE) %>% as('Spatial')
+
+palette <- cpt('ukmo_wow_humidity') 
+range <- seq(0,800,100)
+levelplot(clim_stack,
+          main='PISCOp Climatological Precipitation', 
+          margin=T,    
+          colorkey=list(
+            labels=list(at=range, font=4),  
+            axis.line=list(col='black') 
+          ),    
+          col.regions=palette,
+          at=range) +
+  layer(sp.polygons(sud_sp,col = rgb(1, 1, 1, 0.4), lwd=1))
+```
+
+```{r img_01, echo=FALSE, eval = TRUE}
+load('../../data/post01.Rdata')
+sud_sp <- figures$fig_01$shp
+
+palette <- cpt('ukmo_wow_humidity') 
+range <- seq(0,800,100)
+levelplot(figures$fig_01$stack,
+          main='PISCOp Climatological Precipitation', 
+          margin=T,    
+          colorkey=list(
+            labels=list(at=range, font=4),  
+            axis.line=list(col='black') 
+          ),    
+          col.regions=palette,
+          at=range) +
+  layer(sp.polygons(sud_sp,col = rgb(1, 1, 1, 0.4), lwd=1))
+
+```
+
+
+
+### 3.4 Arequipa Region
+```{r, message = FALSE}
 # Creating a polygon of the PISCOp extent
 piscop_extent <- clim_stack[[1]] %>% 
                   extent %>% 
@@ -80,33 +146,42 @@ piscop_extent <- clim_stack[[1]] %>%
 
 piscop_extent$NOMBRE = 'PISCOp extent'
 
-arequipa <- st_read('arequipa_simply.shp', quiet = TRUE)
+name_arq <- sprintf('%s/arequipa_simply.shp', td)
+arequipa <- st_read(name_arq, quiet = TRUE) %>% as('Spatial')
+
 m_01 <- mapview(arequipa)
 m_02 <- mapview(piscop_extent, fill=NA)
 
 m_01 + m_02
 ```
 
+```{r img_02, echo=FALSE, eval = TRUE}
+figures$fig_02
+```
 
-### 3.4 Method 01: Resampling via `raster` package
+### 3.5 Method 01: Resampling via `raster` package
 
-```{r eval=FALSE, echo = TRUE}
-raster_base <- crop(clim_stack[[1]], arequipa)
+```{r raster}
+raster_base <- crop(clim_stack_integer[[1]], arequipa)
 res(raster_base) <- 0.05
 
-system.time(
-clim_1_a <- resample(clim_stack,raster_base,method='bilinear')
-)
+clim_1_a <- raster::resample(clim_stack_integer/10,
+                             raster_base,
+                             method='bilinear')
 
 plot(clim_1_a[[1]], main = 'Jan Precipitation in Arequipa')
-plot(as(arequipa,'Spatial'),add=T)
+plot(arequipa,add=T)
+```
+
+```{r img_03, echo=FALSE, eval = TRUE}
+plot(figures$fig_03$rr, main = 'Jan Precipitation in Arequipa')
+plot(figures$fig_03$shp,add=T)
 ```
 
 
+### 3.6 Method 02: Resampling via `gdalUtils` package
 
-### 3.5 Method 02: Resampling via `gdalUtils` package
-
-```{r gdalwarp, eval=FALSE, echo = TRUE}
+```{r gdalwarp}
 #' Resampling a Raster* object via GDAL
 #' 
 #' @param r Raster* object to be resampled
@@ -133,49 +208,53 @@ gdal_resample <- function(r,r_base,method='bilinear') {
   #GDAL time!
   gdalwarp(tmp_inname,tmp_outname,tr=res,te=t1,r = method)
   resample_raster = raster(tmp_outname)
-  mapply(file.remove,c(tmp_inname,tmp_outname))
+  
   return(resample_raster)
 }
 ```
 
 **Sequential approach**
-```{r seq, eval = FALSE, echo = TRUE}
-system.time(
+```{r seq}
 clim_1_b <- names(clim_stack) %>% 
   map(~ gdal_resample(clim_stack[[.x]],raster_base)) %>%
   stack()
-)
 
-plot(clim_1_a[[1]], main = 'Jan Precipitation in Arequipa')
-plot(as(arequipa,'Spatial'),add=T)
+plot(clim_1_b[[1]], main = 'Jan Precipitation in Arequipa')
+plot(arequipa,add=T)
+```
+
+```{r img_04, echo=FALSE, eval = TRUE}
+plot(figures$fig_04$rr, main = 'Jan Precipitation in Arequipa')
+plot(figures$fig_04$shp,add=T)
 ```
 
 **Multiprocess approach**
 
-```{r mypc, eval = FALSE, echo = TRUE}
+```{r mypc}
 message(sprintf('%s \n',system('lscpu',intern = T)))
 ```
 
-
-```{r, eval = FALSE, echo = TRUE}
+```{r}
 plan(multiprocess)
 ```
 
-```{r , eval = FALSE}
-system.time(
-clim_1_b <- names(clim_stack) %>% 
+```{r}
+clim_1_c <- names(clim_stack) %>% 
   future_map(~ gdal_resample(clim_stack[[.x]],raster_base)) %>%
   stack()
-)
-plot(clim_1_a[[1]], main = 'Jan Precipitation in Arequipa')
-plot(as(arequipa,'Spatial'),add=T)
+
+plot(clim_1_c[[1]], main = 'Jan Precipitation in Arequipa')
+plot(arequipa, add=T)
 ```
 
+```{r img_05, echo=FALSE, eval = TRUE}
+plot(figures$fig_05$rr, main = 'Jan Precipitation in Arequipa')
+plot(figures$fig_05$shp,add=T)
+```
 
 ## raster vs gdalUtils Comparison (Simple Benckmark)
-```{r eval = F}
-cell_size <- c(0.05,0.025,0.01,0.005,0.0025,0.001)
-
+```{r benckmark}
+cell_size <- c(0.05, 0.025, 0.01, 0.005, 0.0025, 0.00175, 0.0015 , 0.001)
 
 for(x in cell_size) { 
   
@@ -212,12 +291,27 @@ for(x in cell_size) {
   }
 }
 ```
-```{r eval = F}
-kable(df_base)
-df_base %>%
-  gather(package,time,-npixels,-pixel_size) %>% 
-  ggplot(aes(x=npixels,y=time,color=package))+
-  geom_line()+
-  geom_point()
+
+<br>
+
+```{r,eval=T}
+load('/home/aybarpc01/Github/csaybar.github.io/data/post01.Rdata')
+df_base <- figures$fig_06
+kable(df_base)%>%
+  kable_styling(bootstrap_options = "striped",
+                full_width = F)
 ```
 
+```{r,eval=T,message = FALSE}
+df_base %>%  plot_ly(x=~npixels) %>% 
+  add_trace(y = ~raster, name = 'raster',
+            mode = 'lines+markers') %>%
+  add_trace(y = ~gdalUtils, name = 'GdalUtils',
+            mode = 'lines+markers') %>%
+  add_trace(y = ~gdalUtils_4par, name = 'GdalUtils_par',
+            mode = 'lines+markers') %>% 
+  layout(xaxis = list(type = "log",title = 'nPixels'),
+         yaxis = list(title = 'time (s)')
+         )
+```
+  
