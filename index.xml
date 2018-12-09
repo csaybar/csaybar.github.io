@@ -20,7 +20,7 @@
       <guid>/post/resample/</guid>
       <description>1. Intro A typical workflow for earth analysts always will have to do with several spatial data sources (e.g. Sentinel, MODIS and Landsat) each one with a particular extent and pixel resolution. Resampling is the technique used to homogenize these spatial attributes.
 Image obtained from here
- This post demonstrate how easy and incredibly fast is resampling gridded data in R using the raster and gdalUtils packages.</description>
+ This post demonstrates how easy and incredibly fast is resampling gridded data in R using either the raster and gdalUtils packages.</description>
     </item>
     
     <item>

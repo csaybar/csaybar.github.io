@@ -16,24 +16,26 @@ A typical workflow for earth analysts always will have to do with several spatia
 
 ![Image obtained from [here](http://desktop.arcgis.com/en/arcmap/latest/extensions/spatial-analyst/performing-analysis/cell-size-and-resampling-in-analysis.htm)](http://desktop.arcgis.com/en/arcmap/latest/extensions/spatial-analyst/performing-analysis/GUID-F4B313D5-9585-4687-B5EE-37E9C9243EBE-web.png)
 
-This post demonstrate how easy and incredibly fast is resampling gridded data in R using the [raster](https://cran.r-project.org/web/packages/raster/index.html)
+This post demonstrates how **easy** and **incredibly** fast is resampling gridded data in R using either the [raster](https://cran.r-project.org/web/packages/raster/index.html)
  and [gdalUtils](https://cran.r-project.org/web/packages/gdalUtils/index.html) packages. If you do not familiarize with they , first, look at this [tutorial](https://geoscripting-wur.github.io/IntroToRaster/) or run in R:
 ```{r vignette}
-vignette("functions", package = "raster") # Run me in R!
+vignette("Raster", package = "raster") # Run me in R!
 ```
-While `raster` package allow to perform fast operation thanks to optimized back-end C code, some raster manipulation techniques such as `raster::resample()` can become incredibly slow as the raster size increase. A effective alternative but a little more complicated to code is use a **wrapper library** (gdalUtils).
+
+While it is true that the `raster` 'high-level' functions allow performing fast operation thanks to optimized back-end C code, some gridded manipulation techniques such as `raster::resample()` can become incredibly slow as the raster size increase. An effective alternative but a little more complicated to code is use a **wrapper library** (gdalUtils).
 
 ## 2. Wrapper libraries
 
 In few words, a *wrapper* library (not confuse with a binding library) is a piece of code which translate a library's existing (e.g GDAL) into a different interface (e.g an R package). The main advantage is that you will use GDAL in its original language (C++).  Check it [this](https://stackoverflow.com/questions/8628326/what-is-the-difference-between-a-wrapper-bindings-and-a-port) for a more comprehensible explanation.
 
-## 3. Demo
-Get the climatological gridded rainfall dataset [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf) (~10 km) for [Arequipa](https://en.wikipedia.org/wiki/Arequipa_Region) and change the pixel size. [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf): Is based on the merging between the TRMM precipitation radar product and the peruvian rain gauge dataset.
+## 3. Example
+Get the climatological gridded rainfall dataset [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf) (~10 km) for [Arequipa](https://en.wikipedia.org/wiki/Arequipa_Region) and
+measure running time when changing progressively the pixel size.
 
 ### 3.1 Libraries
 Before coding do not forget install and load the following packages.
 
-#####Data Vizualization libraries
+#####Data Visualization libraries
 ```{r plot_libs, warning=FALSE, message=FALSE, eval = TRUE}
 library('ggplot2')
 library('plotly')
@@ -226,10 +228,10 @@ plot(figures$fig_04$rr, main = 'Jan Precipitation in Arequipa')
 plot(figures$fig_04$shp, add = TRUE)
 ```
 
-**Multiprocess approach**
+**Multiprocessing approach**
 
 ```{r mypc, eval = TRUE}
-message(sprintf('%s \n',system('lscpu',intern = T))) # only for linux users
+message(sprintf('%s \n',system('lscpu',intern = T))) # only valid for linux users
 ```
 
 ```{r}
@@ -250,7 +252,7 @@ plot(figures$fig_05$rr, main = 'Jan Precipitation in Arequipa')
 plot(figures$fig_05$shp, add = TRUE)
 ```
 
-## raster vs gdalUtils Comparison (Simple Benckmark)
+## 4. ``raster`` vs ``gdalUtils`` Comparison (Simple Benckmark)
 ```{r benckmark}
 cell_size <- c(0.05, 0.025, 0.01, 0.005, 0.0025, 0.00175, 0.0015 , 0.001)
 
@@ -260,17 +262,17 @@ for(x in cell_size) {
   res(raster_base) <- x
 
   time_m01 <- system.time(
-    clim_1_a <- resample(clim_stack[[1:4]],
+    clim_1_a <- resample(clim_stack,
                          raster_base,
                          method='bilinear'))
 
   time_m02 <- system.time(
-    clim_1_b <- names(clim_stack)[1:4] %>% 
+    clim_1_b <- names(clim_stack) %>% 
       map(~ gdal_resample(clim_stack[[.x]], raster_base)) %>%
       stack())
 
   time_m03 <- system.time(
-    clim_1_c <- names(clim_stack)[1:4] %>% 
+    clim_1_c <- names(clim_stack) %>% 
       future_map(~ gdal_resample(clim_stack[[.x]],
                                  raster_base)) %>%
       stack())
@@ -290,8 +292,6 @@ for(x in cell_size) {
 }
 ```
 
-<br>
-
 ```{r,eval=T}
 load('../../data/post01.Rdata')
 df_base <- figures$fig_06
@@ -299,6 +299,9 @@ kable(df_base)%>%
   kable_styling(bootstrap_options = "striped",
                 full_width = F)
 ```
+
+## 5. Results
+The bellow plot shows a considerable improvement when using **gdaltUtils** respect to **raster** package only for cell sizes < 0.005 km. (50M > pixels). **gdalUtils** using a multiprocessing approach (and 4 cores) was able to generate more than **100M of pixels** in less than 12 seg!.
 
 ```{r,eval=T,message = FALSE}
 df_base %>%  plot_ly(x=~npixels) %>% 
@@ -311,3 +314,13 @@ df_base %>%  plot_ly(x=~npixels) %>%
   layout(xaxis = list(type = "log",title = 'nPixels'),
          yaxis = list(title = 'time (s)'))
 ```
+
+## 6. Epilogue
+I hope you have enjoyed reading this post. If you are interested in still continuing increasing the speed of your spatial processings maybe you want to run the following in your R console:
+
+```{r vignette_02}
+vignette("functions", package = "raster") # Run me in R!
+rasterOptions()
+```
+
+Oh, and before I forget. At the near future, the [terra](https://github.com/rspatial/terra?fbclid=IwAR0gEKvR3AxrvtpyxblIe-jXC2RsZg85IhlI2wDHvGYncOozVdWSMncsoEI) package will replacement the raster package. The first (alpha) release is expected by January 2019. I promise will make an update of this post after the package's release.
