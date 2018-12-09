@@ -292,7 +292,7 @@ for(x in cell_size) {
 }
 ```
 
-```{r,eval=T}
+```{r,eval = TRUE , echo = FALSE}
 load('../../data/post01.Rdata')
 df_base <- figures$fig_06
 kable(df_base)%>%
