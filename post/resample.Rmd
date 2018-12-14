@@ -6,7 +6,7 @@ output:
   html_document:
     toc: true
     toc_float: true
-tags: ["GdalUtils", "raster", "furrr", "plotly"]
+tags: ["GdalUtils", "raster", "furrr", "plotly","rasterVIS"]
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
