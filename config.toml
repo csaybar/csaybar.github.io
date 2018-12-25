@@ -71,7 +71,7 @@ weight = 1
 [[menu.main]]
 parent = "Resources"
 name = "Maps for Fun!"
-url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
+url = "https://csaybar.github.io/mapsforfun/"
 weight = 2
 
 [[menu.main]]
