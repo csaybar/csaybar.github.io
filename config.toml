@@ -59,7 +59,7 @@ weight = 3
 [[menu.main]]
 parent = "Research"
 name = "PISCOp"
-url = "https://piscop.netlify.com/"
+url = "https://piscop.github.io/"
 weight = 1
 
 [[menu.main]]
