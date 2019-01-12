@@ -19,7 +19,7 @@ relativeURLs = true
 [Params]
 #  homeTitle = "Beautiful Hugo Theme" # Set a different text for the header on the home page
 subtitle = "A Blog about Geocomputation"
-logo = "img/me.jpg" # Expecting square dimensions
+logo = "img/oldpython.png" # Expecting square dimensions
 favicon = "img/oldpython.png"
 dateFormat = "January 2, 2006"
 commit = false
