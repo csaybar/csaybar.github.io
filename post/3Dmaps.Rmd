@@ -1,34 +1,182 @@
 ---
-title: "3D Maps in plotly"
+title: "Reproducible geospatial visualizations with plotly"
 author: "Cesar Aybar"
 date: '2018-12-16'
 output:
   html_document:
     toc: true
     toc_float: true
-tags: ["GdalUtils", "raster", "furrr", "plotly","rasterVIS"]
+tags: ["plotly", "crosstalk", "purrr", "velox","..."]
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE,message = FALSE)
 ```
 
-## R Markdown
+## 1. Intro
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Something that impresses me day-to-day is how fast is growing on the R ecosystem. There are a huge amount of packages ([**crosstalk**](https://rstudio.github.io/crosstalk/), [**r2d3**](http://www.r2d3.us/), [**furrr**](https://purrr.tidyverse.org/), [**reticulate**](https://github.com/rstudio/reticulate), [**etc.**](https://awesome-r.com/#awesome-r-2018)) that embraces a wide range of domains, all of them count with a cohesive narrative that helps to get in-depth knowledge quickly.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+In **data vizualization**, the absolutive winner (in my opinion) is **ggplot2** a R (python) package based on [**the grammar of graphics**](https://www.amazon.com/Grammar-Graphics-Statistics-Computing/dp/0387245448). ggplot2 is **declarative**, based on *geoms*, easy to learn, elegant and extremely well documented. However, **ggplot2** not support **dynamics(interactive) visualization** natively. For accomplish this, the best way is use [**plotly.js**](https://plot.ly/javascript/).
 
-```{r cars}
-summary(cars)
+
+## 2. ¿What is plotly.js? 
+#### adapted from Carson Sievert [book](https://plotly-book.cpsievert.me/index.html)
+
+<br>
+
+<a href="https://www.plot.ly/javascript" target="_blank">
+<img src="https://raw.githubusercontent.com/cldougl/plot_images/add_r_img/plotly_2017.png" width = 70%>
+</a>
+
+Built on top of [**d3.js**](https://d3js.org/) and [**stack.gl**](http://stack.gl/), [**plotly.js**](https://plot.ly/javascript/) is a declarative charting library with over 30 different chart types, including scientific charts, 3D graphs, statistical charts, SVG maps, financial charts, and more. R has a package called **plotly**, it is a high-level interface to **plotly.js** based on the **htmlwidget** framework (see ```plotly::as_widget```). In R you can install **plotly** as follow:
+
+
+```{r eval = FALSE, echo = TRUE}
+devtools::install_github("ropensci/plotly")
 ```
 
-## Including Plots
+**2D example:**
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r eval = TRUE}
+library('plotly')
+plot_ly(z = ~volcano)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+**3D example:**
+
+```{r eval = TRUE}
+library('plotly')
+plot_ly(z = ~volcano, type = "surface")
+```
+
+If you are interesting in get more information about how **plotly** works, I extremely recommend check [**the plotly R book**](https://plotly-book.cpsievert.me/).
+
+## 4. Choropleth map of annual precipitation in Peru based on PISCOp
+
+For this example, the [provinces of Peru]() and the gridded rainfall dataset [PISCOpclim](http://ons.snirh.gob.pe/Peru/maproom/Monitoring/Meteorological/PISCO-Prec-v20.pdf) (~10 km) were used.
+
+### 4.1 Libraries
+
+Before coding do not forget install and load the following packages!.
+
+#####Data Visualization libraries
+```{r plot_libs, warning=FALSE, message=FALSE, eval = TRUE}
+library('ggplot2')
+library('plotly')
+```
+
+#####R as a GIS
+```{r GIS, warning=FALSE, message=FALSE, eval = TRUE}
+library('velox')
+library('sf')
+library('raster')
+```
+
+#####Wrangling toolbox
+```{r load_libs, warning=FALSE, message=FALSE, eval = TRUE}
+library('tidyverse')
+library('purrr')
+library('magrittr')
+library('stringr')
+library('stringi')
+library('lazyeval')
+library('rvest')
+```
+
+### 4.2 Downloading/Uncompressing PISCOp and geometries
+```{r}
+webpage_github <- 'https://github.com/csaybar/csaybar.github.io/'
+file <- 'raw/master/data/post_02.zip'
+link <- sprintf('%s%s', webpage_github, file)
+fn <- sprintf('%s.zip', tempfile())
+download.file(link, fn)
+td <- tempdir()
+unzip(fn, ex = td)
+
+peru_prov <- sprintf('%s/post_02/Peruprov.shp', td)
+peru_prov <- st_read(peru_prov, quiet = TRUE)
+```
+
+
+### 4.3 Cleaning the geometry
+
+Data cleaning is needed to reformat and rename the columns. The foreign character **ñ** (a consonant of the Spanish alphabet) was changed by the **n**.
+
+```{r}
+colnames(peru_prov) <- c('provname','depname','geometry')
+nom_prov <- peru_prov$provname
+nom_prov %<>%
+  stri_escape_unicode() %>% 
+  str_replace_all('\\\\ufffd','Ñ')  %>% 
+  stri_trans_totitle()
+
+nom_dep <- peru_prov$depname %>% stri_trans_totitle()
+
+peru_prov$provname <- nom_prov
+peru_prov$depname <- nom_dep
+```
+
+### 4.3 Extracting PISCOpyr
+
+```{r}
+PISCOpyr <- brick(sprintf('%s/post_02/PISCOpyr2.nc', td))
+PISCOpyr_vlx <- velox(PISCOpyr)
+peru_provpp <- PISCOpyr_vlx$extract(peru_prov,
+                                 fun = function(x) mean(x,na.rm=T),
+                                 small = T,
+                                 df = F) %>% as_tibble()
+colnames(peru_provpp) <- 1981:2016 %>% as.character()
+```
+
+#### Pro-tip:
+
+```{r}
+varquos <- sapply(colnames(peru_provpp)[1:30], as_name) %>% 
+  sapply(., quos)
+
+peru_provpp %<>% 
+  mutate(provname = peru_prov$provname) %>% 
+  rowwise() %>% 
+  mutate(anualpp = sum(!!!varquos)/30)
+
+peru_provdb <- left_join(peru_prov,peru_provpp)
+```
+
+### 4.3 Plotly time!
+
+
+```{r}
+peru <- crosstalk::SharedData$new(peru_provdb)
+
+p <- ggplot(peru) + 
+  geom_sf(aes(fill = anualpp,
+              text = paste("The province of <b>",
+                           provname,
+                           '-',
+                           depname,
+                           "</b> present an annual rainfall average  of \n",
+                           anualpp,
+                           "mm.")
+              ), lwd = 0.3) + 
+  ggthemes::theme_map()+
+  theme(plot.title = element_text(size = 18, face = 'bold'),
+        axis.title = element_text(size = 14)) +
+  scale_fill_viridis_c(trans='sqrt',direction=1) +
+  ggtitle('Annual Rainfall Average in Peru<br>Source:<a href="http://worldclim.org/version2">Worldclim v2</a>')+
+  xlab('<br> Reproducible Example: <a href="http://worldclim.org/version2"> Here </a>')
+
+plotly_p <- p %>%
+  ggplotly(tooltip = "text") %>%
+  style(hoveron = "fill") %>%
+  highlight(
+    "plotly_hover",
+    opacityDim = getOption("opacityDim", 0.6),
+    selected = attrs_selected(line = list(color = "black"))
+    )
+```
+```{r eval = TRUE, echo = FALSE}
+load('/home/aybarpc01/Github/csaybar.github.io/data/post02.Rdata')
+plotly_p
+```
+

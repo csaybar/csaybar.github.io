@@ -1,0 +1,146 @@
+---
+title: "Simple Logistic Regression: Python inside R (reticulate)"
+author: "Cesar Aybar"
+date: "January 8, 2019"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+tags: ["Tensorflow", "keras", "gganimate","sklearn"]
+---
+
+Today I'm going to start a serie of 10 post, one for every week from today, about the most popular Machine Learning (ML) and Deep Learning (DL) algorithms. For a easy lecture, all post are going to be write using the same structure:
+
+  - **1. Intro:** A short introduction about the algorithm.
+  - **2. Preprocessing:** Wrangling data.
+  - **3. From Scratch:** Let's take a look at how the algorithm works.
+  - **4. Using [keras](https://keras.io/):** A high-level API build on TensorFlow (It will make your life easy).
+  - **5. Using [tensorflow](https://www.tensorflow.org/?hl=en):** An open source software library for numerical computation using data-flow graphs.
+
+This document was written using the R package [knirt](https://yihui.name/knitr/). Also, the tables and static and dynamic visualizations are building using R too. While the main objective of this serie of tutorials is generate a in-deep knowledge about how really work the ML algorithms. Additionally,I intend to show you how integrate the best of both python (machine learning libraries) + R (tidyverse) into the same workflow.
+
+Note: You need install Rstudio with a version > 1.2 for carry out the python + R integration.
+
+## 1. Intro:
+
+```{r setup, include=FALSE}
+library(reticulate)
+library(kableExtra)
+
+if (!dir.exists('cachepath')) {
+  dir.create('cachepath/')
+}
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,warning = F,message = F,cache.path = 'cachepath/')
+use_python("/usr/bin/python3")
+```
+If you have been studying statistic for a long time (like me), probably you feel at home using **Logistic Regression**. It is a the prefereable algorithm to initialize new students in the field of Machine Learning due its simplicity.
+
+- **Activation Function:** 
+
+$$\hat{y}^{(i)} = a^{(i)} = sigmoid(z^{(i)})\tag{1}$$ 
+
+$$z^{(i)} = w^T x^{(i)} + b \tag{2}$$
+
+$$sigmoid(z) = \frac{1}{1 + e^{-z}}\tag{3}$$
+
+
+- **Decision Boundary:** 
+
+$\hat{y}^{(i)} < 0.5\tag{4};\ case\_01$
+$\hat{y}^{(i)} >= 0.5;\ case\_02 \tag{5}$
+
+- **Loss(Error) Function:** [Cross Entropy](https://en.wikipedia.org/wiki/Cross_entropy)
+
+$$ \mathcal{L}(a^{(i)}, y^{(i)}) =  - y^{(i)}  \log(a^{(i)}) - (1-y^{(i)} )  \log(1-a^{(i)})\tag{6}$$
+
+- **Cost Function:** 
+
+$$ J = \frac{1}{m} \sum_{i=1}^m \mathcal{L}(a^{(i)}, y^{(i)})\tag{7}$$
+
+**You will build a simple image-recognition algorithm that can correctly classify pictures as cat or non-cat**.
+
+## 2. Preprocessing
+
+Before coding do not forget install and load the following libraries.
+
+**For python:**
+
+```{python, cache = TRUE, results='hide'}
+# %% python %% #
+import numpy as np
+import matplotlib.pyplot as plt
+import h5py
+import scipy
+from sklearn.model_selection import train_test_split
+from PIL import Image
+from scipy import ndimage
+import urllib
+```
+
+**For R:**
+
+```{r, cache = TRUE, results='hide'}
+library(tidyverse)
+library(raster)
+```
+
+#### Downloading the cats dataset  (=ↀωↀ=)
+
+![cats-everywere](../ML/cats.webp)
+
+You are given a dataset (cats.h5) containing:
+
+  - **x_info:** a training set with 259 images, each image is of shape 64x64x3 where 3 is for the 3 channels (RGB).
+  - **y_info:** array labeled as cat (y=1) or non-cat (y=0).
+
+```{python, cache = TRUE, results='hide'}
+cat_database = 'https://github.com/csaybar/DLdatasets/raw/master/cats.hdf5'
+urllib.request.urlretrieve(cat_database, 'cachepath/cats.h5')
+```
+
+#### Loading the dataset (hdf5 to numpy)
+
+```{python}
+# %% python %% #
+def load_dataset(test_size = 0.3):
+  """
+  This function convert the cats.h5 dataset in a test and training numpy array.
+
+  Argument:
+  test_size -- If float, should be between 0.0 and 1.0 and represent the proportion of the dataset to include in the test split.
+"""
+  train_dataset = h5py.File('cachepath/cats.h5', "r")
+  train_set_x = np.array(train_dataset['x_info'])
+  train_set_y = np.array(train_dataset['y_info'])
+  classes = np.array(train_dataset["list_classes"]) 
+  tr_x, tst_x, tr_y, tst_y = train_test_split(train_set_x,train_set_y,test_size = test_size)
+  return tr_x, tr_y, tst_x, tst_y, classes
+
+train_set_x, train_set_y, test_set_x, test_set_y, classes = load_dataset()
+```
+
+### Is it a cat-picture?
+
+```{r}
+# %% R %% #
+img = 1
+image = brick(py$train_set_x[img,,,])
+name = py$train_set_y[img]
+if (name) {
+  message = 'This is a cat'
+} else {
+  message = 'This is not a cat'
+}
+
+original_par <-par() #original par
+par(col.axis="white",col.lab="white",tck=0)
+plotRGB(image,axes = TRUE, main = message)
+box(col="white")
+par(original_par) 
+```
+
+
+## 3. Logistic Regression from Scratch
+
+

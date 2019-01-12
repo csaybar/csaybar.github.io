@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tensorflow on Algorithms &amp; Maps</title>
+    <link>/tags/tensorflow/</link>
+    <description>Recent content in Tensorflow on Algorithms &amp; Maps</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
+    <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
+    
+	<atom:link href="/tags/tensorflow/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Simple Logistic Regression: Python inside R (reticulate)</title>
+      <link>/post/ml_01/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/post/ml_01/</guid>
+      <description>Today I’m going to start a series of 10 posts, one for every week from today, about the most popular Machine Learning (ML) and Deep Learning (DL) clasification algorithms.
+Classification algorithms, in a nutshell, give you the possibility to assign a label for each element of your dataset. Even though this action would seem unimportant, there are a lot of real-world applications:
+ Cancer diagnosis. Deforestation. Email spam detection. Speech recognition.</description>
+    </item>
+    
+    <item>
+      <title>Simple Logistic Regression: Python inside R (reticulate)</title>
+      <link>/post/python&#43;r/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/post/python&#43;r/</guid>
+      <description>Today I’m going to start a serie of 10 post, one for every week from today, about the most popular Machine Learning (ML) and Deep Learning (DL) algorithms. For a easy lecture, all post are going to be write using the same structure:
+ 1. Intro: A short introduction about the algorithm. 2. Preprocessing: Wrangling data. 3. From Scratch: Let’s take a look at how the algorithm works. 4. Using keras: A high-level API build on TensorFlow (It will make your life easy).</description>
+    </item>
+    
+  </channel>
+</rss>

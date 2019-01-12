@@ -7,20 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
-    <lastBuildDate>Sun, 16 Dec 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 12 Jan 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>3D Maps in plotly</title>
-      <link>/post/3dmaps/</link>
-      <pubDate>Sun, 16 Dec 2018 00:00:00 +0000</pubDate>
+      <title>How to create 3D Interactive choropleth map in R</title>
+      <link>/post/plotlyformaps_i/</link>
+      <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/post/3dmaps/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-When you click the Knit button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min.</description>
+      <guid>/post/plotlyformaps_i/</guid>
+      <description>1. Intro A Choropleth map is a thematic map in which areas are colored considering the quantitative measurement of a variable, such as population density or gross domestic product.
+There are a lot of libraries in R (and of course in Python too) that perform it efficiently. However, I feel that ggplot2 offers the fastest and most friendly way. Don’t you believe me? Look at this.</description>
     </item>
     
     <item>
