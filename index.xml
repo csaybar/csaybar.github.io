@@ -34,6 +34,18 @@ Image obtained from here
     </item>
     
     <item>
+      <title></title>
+      <link>/page/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/page/projects/</guid>
+      <description>-I don’t update this page as much, so head to my GitHub for the most recent projects
+1. Coursera Deep Learning in Colab This Github repo contains multiple Colab iPython notebooks which serve as tutorials for learning about deploying deep learning and machine learning models. All the material is part of the Coursera Deep Learning Specialization.
+The following topics are covered:
+ 1. Neural Networks and Deep Learning: In this course, you will learn the foundations of deep learning.</description>
+    </item>
+    
+    <item>
       <title>About me</title>
       <link>/page/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -41,6 +53,25 @@ Image obtained from here
       <guid>/page/about/</guid>
       <description>Looking back ~5 years ago, there was one thing which diversified my thoughts and changes the course of my career: Discover Linux and installs Debian Wheezy on my old computer (a Pentium 4). After that one thing led to another.
 I am passionate about data that nowadays works at SENAMHI solving complex problems, always in the best possible way. When I&amp;rsquo;m not in the office coding or writing reports. I am playing the violin (although without much success … for now!</description>
+    </item>
+    
+    <item>
+      <title>Deep Learning &amp; Earth Engine</title>
+      <link>/post/eetf/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/post/eetf/</guid>
+      <description>1. Intro Deep learning has become a buzz word these days. There’s a lot of conversation lately being tossed around it. But, What exactly is it? A good explanation we can find out in the Deep Learning textbook of Ian Goodfellow and Yoshua Bengio and Aaron Courville.
+Deep learning is a particular kind of machine learning that achieves great power and ﬂexibility by representing the world as a nested hierarchy of concepts, with each concept deﬁned in relation to simpler concepts, and more abstract representations computed in terms of less abstract ones.</description>
+    </item>
+    
+    <item>
+      <title>Head Start Data Science I: Titanic Challenge</title>
+      <link>/post/titanic/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/post/titanic/</guid>
+      <description>1. Introduction The Titanic challenge is an excellent way to practice the necessary skills required for ML. Like most of us, I first blindly applied a well-known ML method (Lightgbm); however, I couldn’t go up over the Top 20% :(. To have success in this competition you need to realize an acute feature engineering that takes into account the distribution on train and test dataset. This post is the perfect opportunity to share my Python package preml and show you how can you BEAT THE 97% OF LB.</description>
     </item>
     
   </channel>

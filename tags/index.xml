@@ -7,31 +7,13 @@
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
-    <lastBuildDate>Wed, 05 Dec 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 12 Jan 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Furrr</title>
-      <link>/tags/furrr/</link>
-      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/tags/furrr/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Gdalutils</title>
-      <link>/tags/gdalutils/</link>
-      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/tags/gdalutils/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Plotly</title>
+      <title>plotly</title>
       <link>/tags/plotly/</link>
       <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
@@ -40,25 +22,7 @@
     </item>
     
     <item>
-      <title>Raster</title>
-      <link>/tags/raster/</link>
-      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/tags/raster/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Rastervis</title>
-      <link>/tags/rastervis/</link>
-      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/tags/rastervis/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Rnaturalearth</title>
+      <title>rnaturalearth</title>
       <link>/tags/rnaturalearth/</link>
       <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
@@ -67,11 +31,47 @@
     </item>
     
     <item>
-      <title>Tidyverse</title>
+      <title>tidyverse</title>
       <link>/tags/tidyverse/</link>
       <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
       <guid>/tags/tidyverse/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>GdalUtils</title>
+      <link>/tags/gdalutils/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/gdalutils/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>furrr</title>
+      <link>/tags/furrr/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/furrr/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>raster</title>
+      <link>/tags/raster/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/raster/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>rasterVIS</title>
+      <link>/tags/rastervis/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/rastervis/</guid>
       <description></description>
     </item>
     

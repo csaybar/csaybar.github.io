@@ -1,0 +1,500 @@
+---
+title: "Deep Learning & Earth Engine"
+author: "Cesar Aybar"
+date: "2/1/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,eval = FALSE)
+```
+
+## 1. Intro
+
+Deep learning has become a buzz word these days. There's a lot of conversation lately being tossed around it. But, What exactly is it? A good explanation we can find out in the [**Deep Learning textbook**](https://www.deeplearningbook.org/) of Ian Goodfellow and Yoshua Bengio and Aaron Courville. 
+
+__*Deep learning is a particular kind of machine learning that achieves great power and ﬂexibility by representing the world as a nested hierarchy of concepts, with each concept deﬁned in relation to simpler concepts, and more abstract representations computed in terms of less abstract ones.*__
+
+Deep learning have dramatically improved the state-of-the-art in various computer science domains. However,it potential for remote sensing has not been thoroughly explored. This could be related to the difficult incorporation of spectral & spatial features into a regular classification scheme or the huge pre-processing that images could need it. Hence, this posts aim to teach you how create a simple deep neural using [Earth engine](https://earthengine.google.com/) for get the spectral & spatial data and [tensorflow](https://www.tensorflow.org/?hl=en) for train the model.
+
+## 2. Colab
+
+This tutorial use [colab](https://colab.research.google.com) for making a reproducible demo, [colab](https://colab.research.google.com) is a free cloud service (jupyter as service) with GPU and TPU support that already has the most popular python data scientist libraries installed (included tensorflow).
+
+**Check it yourself!**
+
+- `!cat /etc/*release`   
+
+- `!lscpu` 
+
+- `!grep MemTotal /proc/meminfo` 
+
+- `!pip freeze`
+
+**Alert: Note that you can use  _bash command_ by prepending an ! to the code.**
+
+## 3. Why use tensorflow?
+
+Tensorflows beats other popular ML/DL frameworks for many reason:
+
+- Have the largest community!.
+- [Tensorboard <3](https://www.tensorflow.org/guide/summaries_and_tensorboard)
+- Easily deployment  via [Tensorflow serving](https://www.tensorflow.org/serving)
+- Integration with earth engine via TFRecord.
+- A lot more!
+
+I highly recommend seeing the next [Siraj](https://www.youtube.com/watch?v=SJldOOs4vB8) yt video to get a more compressible explanation about strengths and weaknesses of all the DL frameworks at 2019 (no fast.ai </3).
+
+![](https://raw.githubusercontent.com/csaybar/eeCourse/master/images/love.png)
+
+
+## 4. DEMO: Land Use Area estimation in Camana Valley
+
+Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more important in rural area where the GDP ranges between 20% and 50%. Nowadays, this activity represents the primary source of income for 2.3 million families, representing 34% of Peruvian households.
+
+Despite agriculture importance in Peruvian family lives, today no exist a cropping system either national or regional scale that monitoring the area, state, and kind of culture. The aim of this post is provide a simple methodology for **crop area estimation** based on Principal Components Analysis, Simple sampling technique and Deep Neural Networks. Additionally, I want to show you how easy is integrate earth engine and tensorflow in a single worflow.
+
+![](https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg)
+
+### 4.1. Importing libraries
+
+Before coding do not forget install and load the following packages!.
+
+```{python}
+import ee # Earth Engine Python API
+import tensorflow as tf # ML/DL framework
+from tensorflow.python.framework import ops
+from sklearn.model_selection import train_test_split # Python machine learning library 
+import matplotlib.pyplot as plt # Vizualizations in python
+import pandas as pd # data structures and data analysis tools for python
+import numpy as np # Linear algebra in python
+import folium # Leaflet in python
+import math # Mathematical functions in python
+```
+
+### 4.2 Connecting to the Earth Engine - python API
+
+```{python}
+import ee #Earth engine Python-API
+try:
+  ee.Initialize() # Start connection with earth engine.
+except ee.EEException:
+  !earthengine authenticate # Authenticate earth engine
+  ee.Initialize()
+except:
+  print("Unexpected error:", sys.exc_info()[0])
+  raise  
+```
+
+### 4.3 Camana Valley 
+
+Optional: You can define your own study area
+
+```{python}
+# 4.3.1 Define your study area
+xmin,ymin,xmax,ymax = [-72.778645,-16.671663,-72.64865,-16.57553]
+
+# 4.3.2 Creating a Feature (GeoJSON)
+crop_geojson = {'type':'Feature',
+                'properties':{},
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates' : [[[xmin,ymax],[xmax,ymax],[xmax,ymin],[xmin,ymin],[xmin,ymax]]]
+                }
+               }
+
+# 4.3.3 Vizualize the Camana valley using leaflet 
+m = folium.Map(
+    location=[(ymin+ymax)/2,(xmin+xmax)/2],
+    zoom_start=12,
+    tiles='Stamen Terrain')
+folium.GeoJson(crop_geojson).add_to(m)
+m
+```
+
+```{r eval = TRUE, echo = FALSE,warning=FALSE, message = FALSE}
+library(mapview)
+library(sf)
+
+xmin = -72.778645
+ymin = -16.671663
+xmax = -72.64865
+ymax = -16.57553
+
+pol_matrix <- matrix(c(xmin,ymax,xmax,ymax,xmax,ymin,xmin,ymin,xmin,ymax),ncol = 2,byrow = TRUE)
+
+poly_sf <- st_polygon(list(pol_matrix)) %>%
+  st_sfc %>% st_set_crs('+proj=longlat +datum=WGS84')
+
+
+mapview(poly_sf,map.types = 'Esri.WorldImagery', color = "grey20")
+```
+
+To passing vector dataset to earth engine we can use either the `ee.Geometry.*` or `ee.Feature()` functions. The [**GeoJSON**](http://geojson.org/) spec describes in detail the type of geometries supported by Earth Engine, including **Point** (a list of coordinates in some projection), **LineString** (a list of points), **LinearRing** (a closed LineString), and **Polygon** (a list of LinearRings where the first is a shell and subsequent rings are holes). Earth Engine also supports **MultiPoint**, **MultiLineString**, and **MultiPolygon**. The GeoJSON **GeometryCollection** is also supported, although it has the name MultiGeometry within Earth Engine.
+
+```{python}
+crop_area = ee.Feature(crop_geojson) #Passing a GeoJSON to earth engine
+crop_area = ee.Geometry.Polygon(crop_geojson['geometry']['coordinates']) #Creating a ee.Geometry in earth engine
+```
+
+#### 4.3 Preparing satellite data
+
+For this step will use [Earth engine](https://earthengine.google.com/) the most advanced cloud-based geospatial processing platform in the world. The components that make so great **Earth Engine** are described as follow:
+
+- **Dataset**:  A petabyte-scale archive of publicly available remotely sensed imagery and other data. Explore the data catalog.
+
+- **Compute power**: Google’s computational infrastructure optimized for parallel processing of geospatial data. Learn more from [Gorelick et al. (2017)](https://www.sciencedirect.com/science/article/pii/S0034425717302900).
+
+- Friendly **API** for python and javascript.
+
+
+For mapping crop area this post used Sentinel-2. Sentinel-2 is part of a constellation of satellites developed by ESA to operationalize the Copernicus program. Sentinel-2 is a wide-swath, high-resolution image dataset that contains 13 UINT16 spectral bands representing TOA reflectance. **Earth engine** provides images with radiometric and geometry correction. Additionally, cloud mask information is provided by means of the bit image **QA60**. The following function allows putting NA to the TOA reflectance values of clouds.
+
+
+```{python}
+# 4.3.1 Function to mask clouds using the Sentinel-2 QA band
+def mask2cloud(image):
+  qa = image.select('QA60')
+  # bits 10 and 11 are clouds and cirrus, respectively.
+  cloudsBitMask1 = (1 << 10) 
+  cloudsBitMask2 = (1 << 11)
+  # both flags should be set to zero, indicating clear conditions.
+  mask = qa.bitwiseAnd(cloudsBitMask1).eq(0).And(qa.bitwiseAnd(cloudsBitMask2).eq(0))
+  return image.updateMask(mask).divide(10000)
+```
+
+#### 4.4 Mapping and filtering the Sentinel-2 dataset
+
+In this part we mapping, filtering and reducing the entire Sentinel-2 dataset, considering the following:
+
+- 1. Select only bands with spatial resolution of 10 and 20 meters.
+
+- 2. Filter considering the cloud pixel percentage (< 30%).
+
+- 3. Filter considering a date (we just selecting two years.)
+
+- 4. Apply **mask2cloud** to each image.
+
+- 5. Get the median of the ImageCollection.
+
+- 6. Clip the image considering study area.
+
+
+To apply a function on all the elements of specified ImageCollection or FeatureCollection you can use `.map()`. The only argument to map() is a function which takes one parameter: an `ee.Image`. In other hand, earth engine offers a variety of convenience methods for filtering image collections (see bellow).
+
+
+```{python}
+# 4.3.2 Getting a median Sentinel-2 image from the period 2016-2018 free of clouds.
+
+bands = ['B2','B3','B4','B5','B6','B7','B8']
+
+sentinel_query = ee.ImageCollection("COPERNICUS/S2")\
+                   .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE',30))\
+                   .filterDate('2016-01-01','2018-12-31')\
+                   .map(mask2cloud)\
+                   .median()\
+                   .select(bands)\
+                   .clip(crop_area)
+```
+
+#### 4.4 Generating  train/test dataset using MCD12Q1
+
+The following example uses `*.sample()` function to generate training and testing dataset from a MODIS reference image ([**MCD12Q1 MODIS Land Cover Type Yearly Global 500m**](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1)). Band information about MCD12Q1 was scrapping of the [Earth Engine Catalog - MCD12Q1](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1) using [beautifulsoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/).
+
+```{python}
+modis = ee.ImageCollection("MODIS/006/MCD12Q1")\
+          .select('LC_Type1')\
+          .mode()
+
+db = sentinel_query.addBands(modis)\
+                   .clip(crop_area)\
+                   .sample(numPixels = 1000, seed = 100, scale = 30)\
+                   .getInfo()          
+```
+
+
+```{python}
+import urllib # working with URLs
+import bs4 # Web scrapping
+from collections import OrderedDict  #Create a Ordered Dict!
+```
+
+```{python}
+# mcd12q1 webpage
+eepage = urllib.request.urlopen('https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1')
+soup = bs4.BeautifulSoup(eepage, 'html.parser') #getting the html code
+table = soup.findAll(attrs={'class': 'eecat'})[1]  #getting the tables with class = 'eecat'
+
+Color = [x.string for x in table.findAll('span')] #get color values
+
+table_vt = table.findAll('td')
+
+Value = [x.string for x in table_vt[0:len(table_vt):3]] 
+Text = [x.string for x in table_vt[2:len(table_vt):3]] 
+
+
+description_table = pd.DataFrame(OrderedDict({'value':Value,'color':Color,'description':Text}))
+```
+
+#### 4.5 Using One Hot encodings for land-use classes
+
+Many times in deep learning you will have a **Y** vector with numbers ranging from 0 to C-1, where C is the number of classes. If C is for example 4, then you might have the following **Y** vector which you will need to convert as follows:
+
+![](https://www.tensorflow.org/images/feature_columns/categorical_column_with_identity.jpg)
+
+This is called a "one hot" encoding, because in the converted representation exactly one element of each column is "hot" (meaning set to 1). In tensorflow, you can use the function `tf.one_hot(labels, depth, axis)` to performed it.
+
+```{python}
+def one_hot_matrix(labels,C):
+    one_hot_matrix = tf.one_hot(labels, C, axis=0)
+    with tf.Session() as sess:
+      one_hot = sess.run(one_hot_matrix)
+    return one_hot
+```
+
+```{python}
+lctype = [] #blank list
+
+# Creating a DataFrame from a dict(earth engine)
+for x in range(len(db['features'])):
+  lctype.append(db['features'][x]['properties']) 
+df_landuse = pd.DataFrame(lctype).sort_values(['LC_Type1'])
+print(df_landuse.head(4))
+
+#new classes
+classes = pd.DataFrame({'old':df_landuse['LC_Type1'].unique(),'new':np.arange(7)})
+
+#factor R data type in python ('category').
+df_landuse['LC_Type1'] = df_landuse['LC_Type1'].astype('category')
+df_landuse['LC_Type1'].cat.categories = (np.arange(7))
+```
+
+```{python}
+Y = df_landuse.iloc[:,-1]
+X = df_landuse.iloc[:,0:7]
+
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size = 0.2)
+
+X_test = X_test.values.T
+X_train = X_train.values.T
+Y_train = one_hot_matrix(Y_train,C = 7)
+Y_test = one_hot_matrix(Y_test,C = 7)
+```
+
+#### 4.6 Building a three-layer neural network
+
+LINEAR->RELU->LINEAR->RELU->LIN
+
+In this section finally, we will build a deep neural network using as a framework ![TensorFlow](https://en.wikipedia.org/wiki/TensorFlow). In tensorflow you just define the follow:
+
+- Initialize variables (tf.placeholder)
+
+- Forward propagation
+
+- Compute_cost
+
+- Random_mini_batches
+  
+```{python}
+def create_placeholders(n_x, n_y):
+    X = tf.placeholder(tf.float32, name = 'X')
+    Y = tf.placeholder(tf.float32, name = 'Y')    
+    return X, Y
+```
+
+
+#### 4.6.1 Initialize the parameters.
+
+```{python}
+def initialize_parameters():
+    
+    tf.set_random_seed(100)
+            
+    #first layer
+    W1 = tf.get_variable("W1", [15, 7], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b1 = tf.get_variable("b1", [15, 1], initializer=tf.zeros_initializer())
+    
+    #second layer
+    W2 = tf.get_variable("W2", [10, 15], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b2 = tf.get_variable("b2", [10, 1], initializer=tf.zeros_initializer())
+    
+    #third layer
+    W3 = tf.get_variable("W3", [7, 10], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b3 = tf.get_variable("b3", [7, 1], initializer=tf.zeros_initializer())
+
+
+    parameters = {"W1": W1,
+                  "b1": b1,
+                  "W2": W2,
+                  "b2": b2,
+                  "W3": W3,
+                  "b3": b3}
+    
+    return parameters
+```
+
+#### 4.6.1 Initialize the parameters.
+
+```{python}
+def forward_propagation(X, parameters):    
+    # Retrieve the parameters from the dictionary "parameters" 
+    W1 = parameters['W1']
+    b1 = parameters['b1']
+    W2 = parameters['W2']
+    b2 = parameters['b2']
+    W3 = parameters['W3']
+    b3 = parameters['b3']
+    
+    ### START CODE HERE ### (approx. 5 lines)    # Numpy Equivalents:
+    Z1 = tf.add(tf.matmul(W1, X), b1)              # Z1 = np.dot(W1, X) + b1
+    A1 = tf.nn.relu(Z1)                            # A1 = relu(Z1)
+    Z2 = tf.add(tf.matmul(W2, A1), b2)             # Z2 = np.dot(W2, a1) + b2
+    A2 = tf.nn.relu(Z2)                            # A2 = relu(Z2)
+    Z3 = tf.add(tf.matmul(W3, A2), b3)             # Z3 = np.dot(W3,Z2) + b3
+    ### END CODE HERE ###
+    
+    return Z3
+```
+
+
+```{python}
+def random_mini_batches(X, Y, mini_batch_size = 64, seed = 0):
+    """
+    Creates a list of random minibatches from (X, Y)
+    
+    Arguments:
+    X -- input data, of shape (input size, number of examples)
+    Y -- true "label" vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
+    mini_batch_size - size of the mini-batches, integer
+    seed -- this is only for the purpose of grading, so that you're "random minibatches are the same as ours.
+    
+    Returns:
+    mini_batches -- list of synchronous (mini_batch_X, mini_batch_Y)
+    """
+    
+    m = X.shape[1]                  # number of training examples
+    mini_batches = []
+    np.random.seed(seed)
+    
+    # Step 1: Shuffle (X, Y)
+    permutation = list(np.random.permutation(m))
+    shuffled_X = X[:, permutation]
+    shuffled_Y = Y[:, permutation].reshape((Y.shape[0],m))
+
+    # Step 2: Partition (shuffled_X, shuffled_Y). Minus the end case.
+    num_complete_minibatches = math.floor(m/mini_batch_size) # number of mini batches of size mini_batch_size in your partitionning
+    for k in range(0, num_complete_minibatches):
+        mini_batch_X = shuffled_X[:, k * mini_batch_size : k * mini_batch_size + mini_batch_size]
+        mini_batch_Y = shuffled_Y[:, k * mini_batch_size : k * mini_batch_size + mini_batch_size]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+    
+    # Handling the end case (last mini-batch < mini_batch_size)
+    if m % mini_batch_size != 0:
+        mini_batch_X = shuffled_X[:, num_complete_minibatches * mini_batch_size : m]
+        mini_batch_Y = shuffled_Y[:, num_complete_minibatches * mini_batch_size : m]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+    
+    return mini_batches
+```
+
+
+```{python}
+def compute_cost(Z3, Y):
+  
+    # to fit the tensorflow requirement for tf.nn.softmax_cross_entropy_with_logits(...,...)
+    logits = tf.transpose(Z3)
+    labels = tf.transpose(Y)
+    
+    ### START CODE HERE ### (1 line of code)
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=labels))
+    ### END CODE HERE ###
+    
+    return cost
+```
+
+
+```{python}
+def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
+          num_epochs = 1500, minibatch_size = 32, print_cost = True):
+    
+  ops.reset_default_graph()                         # to be able to rerun the model without overwriting tf variables
+  tf.set_random_seed(1)                             # to keep consistent results
+  seed = 3                                          # to keep consistent results
+  (n_x, m) = X_train.shape                          # (n_x: input size, m : number of examples in the train set)
+  n_y = Y_train.shape[0]                            # n_y : output size
+  costs = []                                        # To keep track of the cost
+    
+  # Create Placeholders of shape (n_x, n_y)
+  X, Y = create_placeholders(n_x, n_y)    
+
+  # Initialize parameters    
+  parameters = initialize_parameters()    
+    
+  # Forward propagation: Build the forward propagation in the tensorflow graph    
+  Z3 = forward_propagation(X, parameters)
+    
+  # Cost function: Add cost function to tensorflow graph    
+  cost = compute_cost(Z3, Y)    
+    
+  # Backpropagation: Define the tensorflow optimizer. Use an AdamOptimizer.    
+  optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
+    
+  # Initialize all the variables
+  init = tf.global_variables_initializer()
+
+  # Start the session to compute the tensorflow graph
+  with tf.Session() as sess:
+        
+    # Run the initialization
+    sess.run(init)
+        
+    # Do the training loop
+    for epoch in range(num_epochs):
+
+      epoch_cost = 0.                       # Defines a cost related to an epoch
+      num_minibatches = int(m / minibatch_size) # number of minibatches of size minibatch_size in the train set
+      seed = seed + 1
+      minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
+
+      for minibatch in minibatches:
+
+        # Select a minibatch
+        (minibatch_X, minibatch_Y) = minibatch
+                
+        # IMPORTANT: The line that runs the graph on a minibatch.
+        # Run the session to execute the "optimizer" and the "cost", the feedict should contain a minibatch for (X,Y).
+        _ , minibatch_cost = sess.run([optimizer, cost], feed_dict={X: minibatch_X, Y: minibatch_Y})
+                          
+        epoch_cost += minibatch_cost / num_minibatches
+
+      # Print the cost every epoch
+      if print_cost == True and epoch % 100 == 0:
+        print ("Cost after epoch %i: %f" % (epoch, epoch_cost))
+      if print_cost == True and epoch % 5 == 0:
+        costs.append(epoch_cost)
+                
+    # plot the cost
+    plt.plot(np.squeeze(costs))
+    plt.ylabel('cost')
+    plt.xlabel('iterations (per tens)')
+    plt.title("Learning rate =" + str(learning_rate))
+    plt.show()
+
+    # lets save the parameters in a variable
+    parameters = sess.run(parameters)
+    print ("Parameters have been trained!")
+
+    # Calculate the correct predictions
+    correct_prediction = tf.equal(tf.argmax(Z3), tf.argmax(Y))
+
+    # Calculate accuracy on the test set
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+    print ("Train Accuracy:", accuracy.eval({X: X_train, Y: Y_train}))
+    print ("Test Accuracy:", accuracy.eval({X: X_test, Y: Y_test}))
+        
+    return parameters
+```
+

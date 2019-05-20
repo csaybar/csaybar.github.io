@@ -12,6 +12,18 @@
     
     
     <item>
+      <title></title>
+      <link>/page/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/page/projects/</guid>
+      <description>-I don’t update this page as much, so head to my GitHub for the most recent projects
+1. Coursera Deep Learning in Colab This Github repo contains multiple Colab iPython notebooks which serve as tutorials for learning about deploying deep learning and machine learning models. All the material is part of the Coursera Deep Learning Specialization.
+The following topics are covered:
+ 1. Neural Networks and Deep Learning: In this course, you will learn the foundations of deep learning.</description>
+    </item>
+    
+    <item>
       <title>About me</title>
       <link>/page/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

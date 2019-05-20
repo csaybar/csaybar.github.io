@@ -1,0 +1,425 @@
+---
+title: "Deep Learning & Earth Engine"
+author: "Cesar Aybar"
+date: "2/1/2019"
+output: html_document
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet/leaflet.js"></script>
+<link href="/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
+<link href="/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
+<script src="/rmarkdown-libs/leaflet-providers/leaflet-providers.js"></script>
+<script src="/rmarkdown-libs/leaflet-providers-plugin/leaflet-providers-plugin.js"></script>
+<script src="/rmarkdown-libs/mapPane/map-pane.js"></script>
+<link href="/rmarkdown-libs/HomeButton/home-button.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/HomeButton/home-button.js"></script>
+<script src="/rmarkdown-libs/HomeButton/easy-button-src.min.js"></script>
+
+
+<div id="intro" class="section level2">
+<h2>1. Intro</h2>
+<p>Deep learning has become a buzz word these days. There’s a lot of conversation lately being tossed around it. But, What exactly is it? A good explanation we can find out in the <a href="https://www.deeplearningbook.org/"><strong>Deep Learning textbook</strong></a> of Ian Goodfellow and Yoshua Bengio and Aaron Courville.</p>
+<p><strong><em>Deep learning is a particular kind of machine learning that achieves great power and ﬂexibility by representing the world as a nested hierarchy of concepts, with each concept deﬁned in relation to simpler concepts, and more abstract representations computed in terms of less abstract ones.</em></strong></p>
+<p>Deep learning have dramatically improved the state-of-the-art in various computer science domains. However,it potential for remote sensing has not been thoroughly explored. This could be related to the difficult incorporation of spectral &amp; spatial features into a regular classification scheme or the huge pre-processing that images could need it. Hence, this posts aim to teach you how create a simple deep neural using <a href="https://earthengine.google.com/">Earth engine</a> for get the spectral &amp; spatial data and <a href="https://www.tensorflow.org/?hl=en">tensorflow</a> for train the model.</p>
+</div>
+<div id="colab" class="section level2">
+<h2>2. Colab</h2>
+<p>This tutorial use <a href="https://colab.research.google.com">colab</a> for making a reproducible demo, <a href="https://colab.research.google.com">colab</a> is a free cloud service (jupyter as service) with GPU and TPU support that already has the most popular python data scientist libraries installed (included tensorflow).</p>
+<p><strong>Check it yourself!</strong></p>
+<ul>
+<li><p><code>!cat /etc/*release</code></p></li>
+<li><p><code>!lscpu</code></p></li>
+<li><p><code>!grep MemTotal /proc/meminfo</code></p></li>
+<li><p><code>!pip freeze</code></p></li>
+</ul>
+<p><strong>Alert: Note that you can use <em>bash command</em> by prepending an ! to the code.</strong></p>
+</div>
+<div id="why-use-tensorflow" class="section level2">
+<h2>3. Why use tensorflow?</h2>
+<p>Tensorflows beats other popular ML/DL frameworks for many reason:</p>
+<ul>
+<li>Have the largest community!.</li>
+<li><a href="https://www.tensorflow.org/guide/summaries_and_tensorboard">Tensorboard &lt;3</a></li>
+<li>Easily deployment via <a href="https://www.tensorflow.org/serving">Tensorflow serving</a></li>
+<li>Integration with earth engine via TFRecord.</li>
+<li>A lot more!</li>
+</ul>
+<p>I highly recommend seeing the next <a href="https://www.youtube.com/watch?v=SJldOOs4vB8">Siraj</a> yt video to get a more compressible explanation about strengths and weaknesses of all the DL frameworks at 2019 (no fast.ai &lt;/3).</p>
+<p><img src="https://raw.githubusercontent.com/csaybar/eeCourse/master/images/love.png" /></p>
+</div>
+<div id="demo-land-use-area-estimation-in-camana-valley" class="section level2">
+<h2>4. DEMO: Land Use Area estimation in Camana Valley</h2>
+<p>Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more important in rural area where the GDP ranges between 20% and 50%. Nowadays, this activity represents the primary source of income for 2.3 million families, representing 34% of Peruvian households.</p>
+<p>Despite agriculture importance in Peruvian family lives, today no exist a cropping system either national or regional scale that monitoring the area, state, and kind of culture. The aim of this post is provide a simple methodology for <strong>crop area estimation</strong> based on Principal Components Analysis, Simple sampling technique and Deep Neural Networks. Additionally, I want to show you how easy is integrate earth engine and tensorflow in a single worflow.</p>
+<p><img src="https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg" /></p>
+<div id="importing-libraries" class="section level3">
+<h3>4.1. Importing libraries</h3>
+<p>Before coding do not forget install and load the following packages!.</p>
+<pre class="python"><code>import ee # Earth Engine Python API
+import tensorflow as tf # ML/DL framework
+from tensorflow.python.framework import ops
+from sklearn.model_selection import train_test_split # Python machine learning library 
+import matplotlib.pyplot as plt # Vizualizations in python
+import pandas as pd # data structures and data analysis tools for python
+import numpy as np # Linear algebra in python
+import folium # Leaflet in python
+import math # Mathematical functions in python</code></pre>
+</div>
+<div id="connecting-to-the-earth-engine---python-api" class="section level3">
+<h3>4.2 Connecting to the Earth Engine - python API</h3>
+<pre class="python"><code>import ee #Earth engine Python-API
+try:
+  ee.Initialize() # Start connection with earth engine.
+except ee.EEException:
+  !earthengine authenticate # Authenticate earth engine
+  ee.Initialize()
+except:
+  print(&quot;Unexpected error:&quot;, sys.exc_info()[0])
+  raise  </code></pre>
+</div>
+<div id="camana-valley" class="section level3">
+<h3>4.3 Camana Valley</h3>
+<p>Optional: You can define your own study area</p>
+<pre class="python"><code># 4.3.1 Define your study area
+xmin,ymin,xmax,ymax = [-72.778645,-16.671663,-72.64865,-16.57553]
+
+# 4.3.2 Creating a Feature (GeoJSON)
+crop_geojson = {&#39;type&#39;:&#39;Feature&#39;,
+                &#39;properties&#39;:{},
+                &#39;geometry&#39;: {
+                    &#39;type&#39;: &#39;Polygon&#39;,
+                    &#39;coordinates&#39; : [[[xmin,ymax],[xmax,ymax],[xmax,ymin],[xmin,ymin],[xmin,ymax]]]
+                }
+               }
+
+# 4.3.3 Vizualize the Camana valley using leaflet 
+m = folium.Map(
+    location=[(ymin+ymax)/2,(xmin+xmax)/2],
+    zoom_start=12,
+    tiles=&#39;Stamen Terrain&#39;)
+folium.GeoJson(crop_geojson).add_to(m)
+m</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"options":{"minZoom":1,"maxZoom":100,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}},"preferCanvas":false,"bounceAtZoomLimits":false,"maxBounds":[[[-90,-370]],[[90,370]]]},"calls":[{"method":"addProviderTiles","args":["Esri.WorldImagery",1,"Esri.WorldImagery",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"createMapPane","args":["polygon",420]},{"method":"addPolygons","args":[[[[{"lng":[-72.778645,-72.64865,-72.64865,-72.778645,-72.778645],"lat":[-16.57553,-16.57553,-16.671663,-16.671663,-16.57553]}]]],null,"poly_sf",{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}},"pane":"polygon","stroke":true,"color":"grey20","weight":1,"opacity":0.9,"fill":true,"fillColor":"#6666ff","fillOpacity":0.6,"smoothFactor":1,"noClip":false},null,{"maxWidth":800,"minWidth":50,"autoPan":true,"keepInView":false,"closeButton":true,"closeOnClick":true,"className":""},"1",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},{"stroke":true,"weight":2,"opacity":0.9,"fillOpacity":0.84,"bringToFront":false,"sendToBack":false}]},{"method":"addScaleBar","args":[{"maxWidth":100,"metric":true,"imperial":true,"updateWhenIdle":true,"position":"bottomleft"}]},{"method":"addHomeButton","args":[-72.778645,-16.671663,-72.64865,-16.57553,"Zoom to poly_sf","<strong> poly_sf <\/strong>","bottomright"]},{"method":"addLayersControl","args":["Esri.WorldImagery","poly_sf",{"collapsed":true,"autoZIndex":true,"position":"topleft"}]}],"limits":{"lat":[-16.671663,-16.57553],"lng":[-72.778645,-72.64865]}},"evals":[],"jsHooks":{"render":[{"code":"function(el, x, data) {\n  return (\n      function(el, x, data) {\n\n        // get the leaflet map\n        var map = this; //HTMLWidgets.find('#' + el.id);\n\n        // we need a new div element because we have to handle\n        // the mouseover output separately\n        // debugger;\n        function addElement () {\n          // generate new div Element\n         var newDiv = $(document.createElement('div'));\n          // append at end of leaflet htmlwidget container\n          $(el).append(newDiv);\n          //provide ID and style\n          newDiv.addClass('lnlt');\n          newDiv.css({\n            'position': 'relative',\n            'bottomleft':  '0px',\n            'background-color': 'rgba(255, 255, 255, 0.7)',\n            'box-shadow': '0 0 2px #bbb',\n            'background-clip': 'padding-box',\n            'margin': '0',\n            'padding-left': '5px',\n            'color': '#333',\n            'font': '9px/1.5 \"Helvetica Neue\", Arial, Helvetica, sans-serif',\n            'z-index': '700',\n          });\n          return newDiv;\n        }\n\n        // check for already existing lnlt class to not duplicate\n        var lnlt = $(el).find('.lnlt');\n\n        if(!lnlt.length) {\n          lnlt = addElement();\n          //$(el).keypress(function (e) {\n          //  if (e.which == 32 || event.keyCode == 32) {\n          //    alert('space key is pressed');\n          //  }\n          //});\n          // grab the special div we generated in the beginning\n          // and put the mousmove output there\n          map.on('mousemove', function (e) {\n            lnlt.text(\n                           ' x: ' + L.CRS.EPSG3857.project(e.latlng).x.toFixed(0) +\n                           ' | y: ' + L.CRS.EPSG3857.project(e.latlng).y.toFixed(0) +\n                           ' | epsg: 3857 ' +\n                           ' | proj4: +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +no_defs ' +\n                           ' | lon: ' + (e.latlng.lng).toFixed(5) +\n                           ' | lat: ' + (e.latlng.lat).toFixed(5) +\n                           ' | zoom: ' + map.getZoom() + ' ');\n          });\n        };\n      }\n      ).call(this.getMap(), el, x, data);\n}","data":null}]}}</script>
+<p>To passing vector dataset to earth engine we can use either the <code>ee.Geometry.*</code> or <code>ee.Feature()</code> functions. The <a href="http://geojson.org/"><strong>GeoJSON</strong></a> spec describes in detail the type of geometries supported by Earth Engine, including <strong>Point</strong> (a list of coordinates in some projection), <strong>LineString</strong> (a list of points), <strong>LinearRing</strong> (a closed LineString), and <strong>Polygon</strong> (a list of LinearRings where the first is a shell and subsequent rings are holes). Earth Engine also supports <strong>MultiPoint</strong>, <strong>MultiLineString</strong>, and <strong>MultiPolygon</strong>. The GeoJSON <strong>GeometryCollection</strong> is also supported, although it has the name MultiGeometry within Earth Engine.</p>
+<pre class="python"><code>crop_area = ee.Feature(crop_geojson) #Passing a GeoJSON to earth engine
+crop_area = ee.Geometry.Polygon(crop_geojson[&#39;geometry&#39;][&#39;coordinates&#39;]) #Creating a ee.Geometry in earth engine</code></pre>
+<div id="preparing-satellite-data" class="section level4">
+<h4>4.3 Preparing satellite data</h4>
+<p>For this step will use <a href="https://earthengine.google.com/">Earth engine</a> the most advanced cloud-based geospatial processing platform in the world. The components that make so great <strong>Earth Engine</strong> are described as follow:</p>
+<ul>
+<li><p><strong>Dataset</strong>: A petabyte-scale archive of publicly available remotely sensed imagery and other data. Explore the data catalog.</p></li>
+<li><p><strong>Compute power</strong>: Google’s computational infrastructure optimized for parallel processing of geospatial data. Learn more from <a href="https://www.sciencedirect.com/science/article/pii/S0034425717302900">Gorelick et al. (2017)</a>.</p></li>
+<li><p>Friendly <strong>API</strong> for python and javascript.</p></li>
+</ul>
+<p>For mapping crop area this post used Sentinel-2. Sentinel-2 is part of a constellation of satellites developed by ESA to operationalize the Copernicus program. Sentinel-2 is a wide-swath, high-resolution image dataset that contains 13 UINT16 spectral bands representing TOA reflectance. <strong>Earth engine</strong> provides images with radiometric and geometry correction. Additionally, cloud mask information is provided by means of the bit image <strong>QA60</strong>. The following function allows putting NA to the TOA reflectance values of clouds.</p>
+<pre class="python"><code># 4.3.1 Function to mask clouds using the Sentinel-2 QA band
+def mask2cloud(image):
+  qa = image.select(&#39;QA60&#39;)
+  # bits 10 and 11 are clouds and cirrus, respectively.
+  cloudsBitMask1 = (1 &lt;&lt; 10) 
+  cloudsBitMask2 = (1 &lt;&lt; 11)
+  # both flags should be set to zero, indicating clear conditions.
+  mask = qa.bitwiseAnd(cloudsBitMask1).eq(0).And(qa.bitwiseAnd(cloudsBitMask2).eq(0))
+  return image.updateMask(mask).divide(10000)</code></pre>
+</div>
+<div id="mapping-and-filtering-the-sentinel-2-dataset" class="section level4">
+<h4>4.4 Mapping and filtering the Sentinel-2 dataset</h4>
+<p>In this part we mapping, filtering and reducing the entire Sentinel-2 dataset, considering the following:</p>
+<ul>
+<li><ol style="list-style-type: decimal">
+<li>Select only bands with spatial resolution of 10 and 20 meters.</li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li>Filter considering the cloud pixel percentage (&lt; 30%).</li>
+</ol></li>
+<li><ol start="3" style="list-style-type: decimal">
+<li>Filter considering a date (we just selecting two years.)</li>
+</ol></li>
+<li><ol start="4" style="list-style-type: decimal">
+<li>Apply <strong>mask2cloud</strong> to each image.</li>
+</ol></li>
+<li><ol start="5" style="list-style-type: decimal">
+<li>Get the median of the ImageCollection.</li>
+</ol></li>
+<li><ol start="6" style="list-style-type: decimal">
+<li>Clip the image considering study area.</li>
+</ol></li>
+</ul>
+<p>To apply a function on all the elements of specified ImageCollection or FeatureCollection you can use <code>.map()</code>. The only argument to map() is a function which takes one parameter: an <code>ee.Image</code>. In other hand, earth engine offers a variety of convenience methods for filtering image collections (see bellow).</p>
+<pre class="python"><code># 4.3.2 Getting a median Sentinel-2 image from the period 2016-2018 free of clouds.
+
+bands = [&#39;B2&#39;,&#39;B3&#39;,&#39;B4&#39;,&#39;B5&#39;,&#39;B6&#39;,&#39;B7&#39;,&#39;B8&#39;]
+
+sentinel_query = ee.ImageCollection(&quot;COPERNICUS/S2&quot;)\
+                   .filter(ee.Filter.lt(&#39;CLOUDY_PIXEL_PERCENTAGE&#39;,30))\
+                   .filterDate(&#39;2016-01-01&#39;,&#39;2018-12-31&#39;)\
+                   .map(mask2cloud)\
+                   .median()\
+                   .select(bands)\
+                   .clip(crop_area)</code></pre>
+</div>
+<div id="generating-traintest-dataset-using-mcd12q1" class="section level4">
+<h4>4.4 Generating train/test dataset using MCD12Q1</h4>
+<p>The following example uses <code>*.sample()</code> function to generate training and testing dataset from a MODIS reference image (<a href="https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1"><strong>MCD12Q1 MODIS Land Cover Type Yearly Global 500m</strong></a>). Band information about MCD12Q1 was scrapping of the <a href="https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1">Earth Engine Catalog - MCD12Q1</a> using <a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">beautifulsoup</a>.</p>
+<pre class="python"><code>modis = ee.ImageCollection(&quot;MODIS/006/MCD12Q1&quot;)\
+          .select(&#39;LC_Type1&#39;)\
+          .mode()
+
+db = sentinel_query.addBands(modis)\
+                   .clip(crop_area)\
+                   .sample(numPixels = 1000, seed = 100, scale = 30)\
+                   .getInfo()          </code></pre>
+<pre class="python"><code>import urllib # working with URLs
+import bs4 # Web scrapping
+from collections import OrderedDict  #Create a Ordered Dict!</code></pre>
+<pre class="python"><code># mcd12q1 webpage
+eepage = urllib.request.urlopen(&#39;https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1&#39;)
+soup = bs4.BeautifulSoup(eepage, &#39;html.parser&#39;) #getting the html code
+table = soup.findAll(attrs={&#39;class&#39;: &#39;eecat&#39;})[1]  #getting the tables with class = &#39;eecat&#39;
+
+Color = [x.string for x in table.findAll(&#39;span&#39;)] #get color values
+
+table_vt = table.findAll(&#39;td&#39;)
+
+Value = [x.string for x in table_vt[0:len(table_vt):3]] 
+Text = [x.string for x in table_vt[2:len(table_vt):3]] 
+
+
+description_table = pd.DataFrame(OrderedDict({&#39;value&#39;:Value,&#39;color&#39;:Color,&#39;description&#39;:Text}))</code></pre>
+</div>
+<div id="using-one-hot-encodings-for-land-use-classes" class="section level4">
+<h4>4.5 Using One Hot encodings for land-use classes</h4>
+<p>Many times in deep learning you will have a <strong>Y</strong> vector with numbers ranging from 0 to C-1, where C is the number of classes. If C is for example 4, then you might have the following <strong>Y</strong> vector which you will need to convert as follows:</p>
+<p><img src="https://www.tensorflow.org/images/feature_columns/categorical_column_with_identity.jpg" /></p>
+<p>This is called a “one hot” encoding, because in the converted representation exactly one element of each column is “hot” (meaning set to 1). In tensorflow, you can use the function <code>tf.one_hot(labels, depth, axis)</code> to performed it.</p>
+<pre class="python"><code>def one_hot_matrix(labels,C):
+    one_hot_matrix = tf.one_hot(labels, C, axis=0)
+    with tf.Session() as sess:
+      one_hot = sess.run(one_hot_matrix)
+    return one_hot</code></pre>
+<pre class="python"><code>lctype = [] #blank list
+
+# Creating a DataFrame from a dict(earth engine)
+for x in range(len(db[&#39;features&#39;])):
+  lctype.append(db[&#39;features&#39;][x][&#39;properties&#39;]) 
+df_landuse = pd.DataFrame(lctype).sort_values([&#39;LC_Type1&#39;])
+print(df_landuse.head(4))
+
+#new classes
+classes = pd.DataFrame({&#39;old&#39;:df_landuse[&#39;LC_Type1&#39;].unique(),&#39;new&#39;:np.arange(7)})
+
+#factor R data type in python (&#39;category&#39;).
+df_landuse[&#39;LC_Type1&#39;] = df_landuse[&#39;LC_Type1&#39;].astype(&#39;category&#39;)
+df_landuse[&#39;LC_Type1&#39;].cat.categories = (np.arange(7))</code></pre>
+<pre class="python"><code>Y = df_landuse.iloc[:,-1]
+X = df_landuse.iloc[:,0:7]
+
+X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size = 0.2)
+
+X_test = X_test.values.T
+X_train = X_train.values.T
+Y_train = one_hot_matrix(Y_train,C = 7)
+Y_test = one_hot_matrix(Y_test,C = 7)</code></pre>
+</div>
+<div id="building-a-three-layer-neural-network" class="section level4">
+<h4>4.6 Building a three-layer neural network</h4>
+<p>LINEAR-&gt;RELU-&gt;LINEAR-&gt;RELU-&gt;LIN</p>
+<p>In this section finally, we will build a deep neural network using as a framework <img src="https://en.wikipedia.org/wiki/TensorFlow" alt="TensorFlow" />. In tensorflow you just define the follow:</p>
+<ul>
+<li><p>Initialize variables (tf.placeholder)</p></li>
+<li><p>Forward propagation</p></li>
+<li><p>Compute_cost</p></li>
+<li><p>Random_mini_batches</p></li>
+</ul>
+<pre class="python"><code>def create_placeholders(n_x, n_y):
+    X = tf.placeholder(tf.float32, name = &#39;X&#39;)
+    Y = tf.placeholder(tf.float32, name = &#39;Y&#39;)    
+    return X, Y</code></pre>
+</div>
+<div id="initialize-the-parameters." class="section level4">
+<h4>4.6.1 Initialize the parameters.</h4>
+<pre class="python"><code>def initialize_parameters():
+    
+    tf.set_random_seed(100)
+            
+    #first layer
+    W1 = tf.get_variable(&quot;W1&quot;, [15, 7], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b1 = tf.get_variable(&quot;b1&quot;, [15, 1], initializer=tf.zeros_initializer())
+    
+    #second layer
+    W2 = tf.get_variable(&quot;W2&quot;, [10, 15], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b2 = tf.get_variable(&quot;b2&quot;, [10, 1], initializer=tf.zeros_initializer())
+    
+    #third layer
+    W3 = tf.get_variable(&quot;W3&quot;, [7, 10], initializer=tf.contrib.layers.xavier_initializer(seed=1))
+    b3 = tf.get_variable(&quot;b3&quot;, [7, 1], initializer=tf.zeros_initializer())
+
+    parameters = {&quot;W1&quot;: W1,
+                  &quot;b1&quot;: b1,
+                  &quot;W2&quot;: W2,
+                  &quot;b2&quot;: b2,
+                  &quot;W3&quot;: W3,
+                  &quot;b3&quot;: b3}
+    
+    return parameters</code></pre>
+</div>
+<div id="initialize-the-parameters.-1" class="section level4">
+<h4>4.6.1 Initialize the parameters.</h4>
+<pre class="python"><code>def forward_propagation(X, parameters):    
+    # Retrieve the parameters from the dictionary &quot;parameters&quot; 
+    W1 = parameters[&#39;W1&#39;]
+    b1 = parameters[&#39;b1&#39;]
+    W2 = parameters[&#39;W2&#39;]
+    b2 = parameters[&#39;b2&#39;]
+    W3 = parameters[&#39;W3&#39;]
+    b3 = parameters[&#39;b3&#39;]
+    
+    ### START CODE HERE ### (approx. 5 lines)    # Numpy Equivalents:
+    Z1 = tf.add(tf.matmul(W1, X), b1)              # Z1 = np.dot(W1, X) + b1
+    A1 = tf.nn.relu(Z1)                            # A1 = relu(Z1)
+    Z2 = tf.add(tf.matmul(W2, A1), b2)             # Z2 = np.dot(W2, a1) + b2
+    A2 = tf.nn.relu(Z2)                            # A2 = relu(Z2)
+    Z3 = tf.add(tf.matmul(W3, A2), b3)             # Z3 = np.dot(W3,Z2) + b3
+    ### END CODE HERE ###
+    
+    return Z3</code></pre>
+<pre class="python"><code>def random_mini_batches(X, Y, mini_batch_size = 64, seed = 0):
+    &quot;&quot;&quot;
+    Creates a list of random minibatches from (X, Y)
+    
+    Arguments:
+    X -- input data, of shape (input size, number of examples)
+    Y -- true &quot;label&quot; vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
+    mini_batch_size - size of the mini-batches, integer
+    seed -- this is only for the purpose of grading, so that you&#39;re &quot;random minibatches are the same as ours.
+    
+    Returns:
+    mini_batches -- list of synchronous (mini_batch_X, mini_batch_Y)
+    &quot;&quot;&quot;
+    
+    m = X.shape[1]                  # number of training examples
+    mini_batches = []
+    np.random.seed(seed)
+    
+    # Step 1: Shuffle (X, Y)
+    permutation = list(np.random.permutation(m))
+    shuffled_X = X[:, permutation]
+    shuffled_Y = Y[:, permutation].reshape((Y.shape[0],m))
+
+    # Step 2: Partition (shuffled_X, shuffled_Y). Minus the end case.
+    num_complete_minibatches = math.floor(m/mini_batch_size) # number of mini batches of size mini_batch_size in your partitionning
+    for k in range(0, num_complete_minibatches):
+        mini_batch_X = shuffled_X[:, k * mini_batch_size : k * mini_batch_size + mini_batch_size]
+        mini_batch_Y = shuffled_Y[:, k * mini_batch_size : k * mini_batch_size + mini_batch_size]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+    
+    # Handling the end case (last mini-batch &lt; mini_batch_size)
+    if m % mini_batch_size != 0:
+        mini_batch_X = shuffled_X[:, num_complete_minibatches * mini_batch_size : m]
+        mini_batch_Y = shuffled_Y[:, num_complete_minibatches * mini_batch_size : m]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+    
+    return mini_batches</code></pre>
+<pre class="python"><code>def compute_cost(Z3, Y):
+  
+    # to fit the tensorflow requirement for tf.nn.softmax_cross_entropy_with_logits(...,...)
+    logits = tf.transpose(Z3)
+    labels = tf.transpose(Y)
+    
+    ### START CODE HERE ### (1 line of code)
+    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=labels))
+    ### END CODE HERE ###
+    
+    return cost</code></pre>
+<pre class="python"><code>def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
+          num_epochs = 1500, minibatch_size = 32, print_cost = True):
+    
+  ops.reset_default_graph()                         # to be able to rerun the model without overwriting tf variables
+  tf.set_random_seed(1)                             # to keep consistent results
+  seed = 3                                          # to keep consistent results
+  (n_x, m) = X_train.shape                          # (n_x: input size, m : number of examples in the train set)
+  n_y = Y_train.shape[0]                            # n_y : output size
+  costs = []                                        # To keep track of the cost
+    
+  # Create Placeholders of shape (n_x, n_y)
+  X, Y = create_placeholders(n_x, n_y)    
+
+  # Initialize parameters    
+  parameters = initialize_parameters()    
+    
+  # Forward propagation: Build the forward propagation in the tensorflow graph    
+  Z3 = forward_propagation(X, parameters)
+    
+  # Cost function: Add cost function to tensorflow graph    
+  cost = compute_cost(Z3, Y)    
+    
+  # Backpropagation: Define the tensorflow optimizer. Use an AdamOptimizer.    
+  optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
+    
+  # Initialize all the variables
+  init = tf.global_variables_initializer()
+
+  # Start the session to compute the tensorflow graph
+  with tf.Session() as sess:
+        
+    # Run the initialization
+    sess.run(init)
+        
+    # Do the training loop
+    for epoch in range(num_epochs):
+
+      epoch_cost = 0.                       # Defines a cost related to an epoch
+      num_minibatches = int(m / minibatch_size) # number of minibatches of size minibatch_size in the train set
+      seed = seed + 1
+      minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
+
+      for minibatch in minibatches:
+
+        # Select a minibatch
+        (minibatch_X, minibatch_Y) = minibatch
+                
+        # IMPORTANT: The line that runs the graph on a minibatch.
+        # Run the session to execute the &quot;optimizer&quot; and the &quot;cost&quot;, the feedict should contain a minibatch for (X,Y).
+        _ , minibatch_cost = sess.run([optimizer, cost], feed_dict={X: minibatch_X, Y: minibatch_Y})
+                          
+        epoch_cost += minibatch_cost / num_minibatches
+
+      # Print the cost every epoch
+      if print_cost == True and epoch % 100 == 0:
+        print (&quot;Cost after epoch %i: %f&quot; % (epoch, epoch_cost))
+      if print_cost == True and epoch % 5 == 0:
+        costs.append(epoch_cost)
+                
+    # plot the cost
+    plt.plot(np.squeeze(costs))
+    plt.ylabel(&#39;cost&#39;)
+    plt.xlabel(&#39;iterations (per tens)&#39;)
+    plt.title(&quot;Learning rate =&quot; + str(learning_rate))
+    plt.show()
+
+    # lets save the parameters in a variable
+    parameters = sess.run(parameters)
+    print (&quot;Parameters have been trained!&quot;)
+
+    # Calculate the correct predictions
+    correct_prediction = tf.equal(tf.argmax(Z3), tf.argmax(Y))
+
+    # Calculate accuracy on the test set
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, &quot;float&quot;))
+
+    print (&quot;Train Accuracy:&quot;, accuracy.eval({X: X_train, Y: Y_train}))
+    print (&quot;Test Accuracy:&quot;, accuracy.eval({X: X_test, Y: Y_test}))
+        
+    return parameters</code></pre>
+</div>
+</div>
+</div>

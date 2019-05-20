@@ -63,29 +63,9 @@ url = "https://piscop.github.io/"
 weight = 1
 
 [[menu.main]]
-parent = "Resources"
-name = "Earth Engine with Python"
-url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
-weight = 1
-
-[[menu.main]]
-parent = "Resources"
-name = "Maps for Fun!"
-url = "https://csaybar.github.io/mapsforfun/"
-weight = 2
-
-[[menu.main]]
-parent = "Resources"
-name = "ML from scratch"
-url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
+name = "Projects"
+url = "page/projects/"
 weight = 3
-
-[[menu.main]]
-parent = "Resources"
-name = "Cheat sheets for data scientists"
-url = "https://pa1.narvii.com/6732/b43d60e14ada36642c09c9ecf194886702b7bbaf_hq.gif"
-weight = 4
-
 
 [[menu.main]]
 parent = "Presentations" 
