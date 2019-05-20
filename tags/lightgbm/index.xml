@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>sklearn on Algorithms &amp; Maps</title>
-    <link>/tags/sklearn/</link>
-    <description>Recent content in sklearn on Algorithms &amp; Maps</description>
+    <title>lightgbm on Algorithms &amp; Maps</title>
+    <link>/tags/lightgbm/</link>
+    <description>Recent content in lightgbm on Algorithms &amp; Maps</description>
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
     <lastBuildDate>Sun, 19 May 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/sklearn/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/lightgbm/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
