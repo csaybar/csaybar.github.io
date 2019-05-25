@@ -14,7 +14,7 @@ tags: ["Python", "shap", "featuretools", "lightgbm","sklearn"]
 
 <div id="introduction" class="section level2">
 <h2>1. Introduction</h2>
-<p>The <a href="https://www.kaggle.com/c/titanic/overview/evaluation">Titanic challenge</a> is an excellent way to practice the necessary skills required for ML. Like most of us, I first blindly applied a well-known ML method (<strong>Lightgbm</strong>); however, I couldn’t go up over the Top 20% :(. To have success in this competition you need to realize an <strong>acute feature engineering</strong> that takes into account the distribution on train and test dataset. This post is the perfect opportunity to share my Python package <a href="https://www.github.com/csaybar/preml">preml</a> and show you how can you <strong>BEAT THE 97% OF LB</strong>.</p>
+<p>The <a href="https://www.kaggle.com/c/titanic/overview/evaluation">Titanic challenge</a> is an excellent way to practice the necessary skills required for ML. In my first attempts, I blindly applied a well-known ML method (<strong>Lightgbm</strong>); however, I couldn’t go up over the Top 20% :(. To have success in this competition you need to realize an <strong>acute feature engineering</strong> that takes into account the distribution on train and test dataset. This post is the perfect opportunity to share with you my Python package <a href="https://www.github.com/csaybar/preml">preml</a> and show how can you <strong>BEAT THE 97% OF LB</strong>.</p>
 <p>Frankly, This is not a 100% ORIGINAL work, I get a lot of inspiration of different kernel:</p>
 <ul>
 <li><a href="https://www.kaggle.com/cdeotte/titanic-wcg-xgboost-0-84688">1. Titanic WCG+XGBoost</a></li>
@@ -48,6 +48,7 @@ In this challenge, we ask you to complete the analysis of what sorts of people w
 </ul>
 <p>The training set should be used to build your machine learning models. For the training set, we provide the outcome (also known as the “ground truth”) for each passenger. Your model will be based on “features” like passengers’ gender and class. You can also use feature engineering to create new features.</p>
 <p>The test set should be used to see how well your model performs on unseen data. For the test set, we do not provide the ground truth for each passenger. It is your job to predict these outcomes. For each passenger in the test set, use the model you trained to predict whether or not they survived the sinking of the Titanic.</p>
+<center>
 <table>
 <thead>
 <tr class="header">
@@ -102,6 +103,7 @@ In this challenge, we ask you to complete the analysis of what sorts of people w
 </tr>
 </tbody>
 </table>
+</center>
 </div>
 <div id="metric" class="section level2">
 <h2>4. Metric</h2>
@@ -1152,9 +1154,10 @@ dataset_female_test = dataset_female[dataset_female[&#39;Survived&#39;].isnull()
 X_test_female = dataset_female_test[features]
 
 PassengerId_female = dataset_female_test[&#39;PassengerId&#39;].reset_index(drop=True)</code></pre>
-<pre class="python"><code>#### 6.2.2 Feature Engineering with featuretools
-
-In this post I do not cover all the details related to featuretools but is you are interesting, I highly recommend looking at all the  [official demos](https://www.featuretools.com/demos/) and this [fantastic kernel](https://www.kaggle.com/liananapalkova/automated-feature-engineering-for-titanic-dataset).</code></pre>
+</div>
+<div id="feature-engineering-with-featuretools" class="section level4">
+<h4>6.2.2 Feature Engineering with featuretools</h4>
+<p>In this post I do not cover all the details related to featuretools but is you are interesting, I highly recommend looking at all the <a href="https://www.featuretools.com/demos/">official demos</a> and this <a href="https://www.kaggle.com/liananapalkova/automated-feature-engineering-for-titanic-dataset">fantastic kernel</a>.</p>
 <pre class="python"><code>def create_titanic_entity(df,ID_index, entity_name = &#39;EntitySet&#39;, bei = &#39;train&#39;):
   es = ft.EntitySet(id = entity_name)
   es = es.entity_from_dataframe(entity_id = &#39;train&#39;, dataframe = df, 
