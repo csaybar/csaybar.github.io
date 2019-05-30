@@ -7,10 +7,19 @@
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
-    <lastBuildDate>Sun, 19 May 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 30 May 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Integrating Earth Engine with Tensorflow I - DNN</title>
+      <link>/post/eetf/</link>
+      <pubDate>Thu, 30 May 2019 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/post/eetf/</guid>
+      <description>Topics Create a training/testing dataset (in a TFRecord format) using Earth Engine. Create functions for parse data (TFRecord -&amp;gt; tf.data.Dataset). Training and Test a simple Vanilla Deep Neural Network using tensorflow 2.0. Making predictions on image data exported from Earth Engine in TFRecord format. Upload your results to Earth Engine (asset).   1. Introduction Deep learning has dramatically improved the state-of-the-art in various science domains.</description>
+    </item>
     
     <item>
       <title>Head Start Data Science I: Titanic Challenge</title>
@@ -62,16 +71,6 @@ The following topics are covered:
       <guid>/page/about/</guid>
       <description>Looking back ~5 years ago, there was one thing which diversified my thoughts and changes the course of my career: Discover Linux and installs Debian Wheezy on my old computer (a Pentium 4). After that one thing led to another.
 I am passionate about data that nowadays works at SENAMHI solving complex problems, always in the best possible way. When I&amp;rsquo;m not in the office coding or writing reports. I am playing the violin (although without much success … for now!</description>
-    </item>
-    
-    <item>
-      <title>Deep Learning &amp; Earth Engine</title>
-      <link>/post/eetf/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/post/eetf/</guid>
-      <description>1. Intro Deep learning has become a buzz word these days. There’s a lot of conversation lately being tossed around it. But, What exactly is it? A good explanation we can find out in the Deep Learning textbook of Ian Goodfellow and Yoshua Bengio and Aaron Courville.
-Deep learning is a particular kind of machine learning that achieves great power and ﬂexibility by representing the world as a nested hierarchy of concepts, with each concept deﬁned in relation to simpler concepts, and more abstract representations computed in terms of less abstract ones.</description>
     </item>
     
   </channel>

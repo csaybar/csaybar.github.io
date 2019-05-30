@@ -1,500 +1,515 @@
 ---
-title: "Deep Learning & Earth Engine"
-author: "Cesar Aybar"
-date: "2/1/2019"
+title: "Integrating Earth Engine with Tensorflow I - DNN"
+author: "Cesar Aybar" 
+date: "2019-05-30"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,eval = FALSE)
 ```
+|
+<center>
+<img src="https://raw.githubusercontent.com/csaybar/EEwPython/master/images/colab_ee_integration.png">
+</center>  
 
-## 1. Intro
+## Topics
 
-Deep learning has become a buzz word these days. There's a lot of conversation lately being tossed around it. But, What exactly is it? A good explanation we can find out in the [**Deep Learning textbook**](https://www.deeplearningbook.org/) of Ian Goodfellow and Yoshua Bengio and Aaron Courville. 
-
-__*Deep learning is a particular kind of machine learning that achieves great power and ﬂexibility by representing the world as a nested hierarchy of concepts, with each concept deﬁned in relation to simpler concepts, and more abstract representations computed in terms of less abstract ones.*__
-
-Deep learning have dramatically improved the state-of-the-art in various computer science domains. However,it potential for remote sensing has not been thoroughly explored. This could be related to the difficult incorporation of spectral & spatial features into a regular classification scheme or the huge pre-processing that images could need it. Hence, this posts aim to teach you how create a simple deep neural using [Earth engine](https://earthengine.google.com/) for get the spectral & spatial data and [tensorflow](https://www.tensorflow.org/?hl=en) for train the model.
-
-## 2. Colab
-
-This tutorial use [colab](https://colab.research.google.com) for making a reproducible demo, [colab](https://colab.research.google.com) is a free cloud service (jupyter as service) with GPU and TPU support that already has the most popular python data scientist libraries installed (included tensorflow).
-
-**Check it yourself!**
-
-- `!cat /etc/*release`   
-
-- `!lscpu` 
-
-- `!grep MemTotal /proc/meminfo` 
-
-- `!pip freeze`
-
-**Alert: Note that you can use  _bash command_ by prepending an ! to the code.**
-
-## 3. Why use tensorflow?
-
-Tensorflows beats other popular ML/DL frameworks for many reason:
-
-- Have the largest community!.
-- [Tensorboard <3](https://www.tensorflow.org/guide/summaries_and_tensorboard)
-- Easily deployment  via [Tensorflow serving](https://www.tensorflow.org/serving)
-- Integration with earth engine via TFRecord.
-- A lot more!
-
-I highly recommend seeing the next [Siraj](https://www.youtube.com/watch?v=SJldOOs4vB8) yt video to get a more compressible explanation about strengths and weaknesses of all the DL frameworks at 2019 (no fast.ai </3).
-
-![](https://raw.githubusercontent.com/csaybar/eeCourse/master/images/love.png)
+1. Create a training/testing dataset (in a TFRecord format) using Earth Engine.
+2.  Create functions for parse data (TFRecord -> tf.data.Dataset).
+3.   Training and Test a simple Vanilla Deep Neural Network using tensorflow 2.0.
+3.   Making predictions on image data exported from Earth Engine in TFRecord format.
+4.   Upload your results to Earth Engine (asset).
 
 
-## 4. DEMO: Land Use Area estimation in Camana Valley
 
-Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more important in rural area where the GDP ranges between 20% and 50%. Nowadays, this activity represents the primary source of income for 2.3 million families, representing 34% of Peruvian households.
 
-Despite agriculture importance in Peruvian family lives, today no exist a cropping system either national or regional scale that monitoring the area, state, and kind of culture. The aim of this post is provide a simple methodology for **crop area estimation** based on Principal Components Analysis, Simple sampling technique and Deep Neural Networks. Additionally, I want to show you how easy is integrate earth engine and tensorflow in a single worflow.
+## 1. Introduction
 
-![](https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg)
+Deep learning has dramatically improved the state-of-the-art in various science domains. For remote sensing, its potential has not been thoroughly explored. This could be related to the problematic incorporation of spectral & spatial features into a regular deep learning classification scheme or the huge pre-processing that satellite images could need it. Hence, this post aims to teach you how to create a painless deep learning pipeline integrating [Google Earth engine](https://earthengine.google.com/) for acquiring spectral & spatial data and [tensorflow](https://www.tensorflow.org/?hl=en) for train and test the model and make predictions.
 
-### 4.1. Importing libraries
 
-Before coding do not forget install and load the following packages!.
+## 2. What is Google Earth Engine (GEE)?
 
-```{python}
-import ee # Earth Engine Python API
-import tensorflow as tf # ML/DL framework
-from tensorflow.python.framework import ops
-from sklearn.model_selection import train_test_split # Python machine learning library 
-import matplotlib.pyplot as plt # Vizualizations in python
-import pandas as pd # data structures and data analysis tools for python
-import numpy as np # Linear algebra in python
-import folium # Leaflet in python
-import math # Mathematical functions in python
+In a nutshell, is a platform that combines a multi-petabyte [catalog of satellite imagery](https://developers.google.com/earth-engine/datasets/) with planetary-scale analysis capabilities. There are several ways to interact with GEE:
+
+  - [Explorer](https://explorer.earthengine.google.com/)
+  - [Code Editor](https://code.earthengine.google.com/)  
+  - [Javascript wrapper library](https://github.com/google/earthengine-api/tree/master/javascript)
+  - [**Python wrapper library**](https://github.com/google/earthengine-api/tree/master/python)
+
+In my opinion, the **Python wrapper library** (used in this post) is the best choice to interact with GEE for the following reasons:
+
+- Easy to share code.
+- Easy transition to a web application.
+- Possibility to integrate with  ML/DL frameworks.
+- Many plotting options (folium, plotly, matplotlib, seaborn ,etc.).
+
+One more thing!, it's possible to run the Earth Engine Python API in a cloud environment for free, See this section of our [EE course introduction](https://colab.research.google.com/github/csaybar/EEwPython/blob/dev/1_Introduction.ipynb).
+
+## 3.  Deep Neural Network (DNN)
+
+<center>
+<image src="https://www.electronicdesign.com/sites/electronicdesign.com/files/MachineLearning_WTD_Fig3.png">
+</center>
+  
+A DNN is simply a neural network with more than two layers. The main steps for building a DNN are:
+
+1. Initialize the model's parameters.
+2. Loop:
+    - Calculate current loss (forward propagation) :    
+    - Calculate current gradient (backward propagation)
+    - Update parameters (gradient descent)
+
+The second step could be  a little intimidating, but don't worry about it!. **tf.keras**, the TensorFlow's high-level API, only need that you define the forward propagation correctly and all the steps further down will make automatically. This post does not intend to introduce the algorithm, check out this [repo](https://github.com/csaybar/DLcoursera) for a from zero (numpy) implementation.
+
+## 4. Crop Area estimation in Camana Valley
+
+Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more critical in rural areas where the contribution of GDP increase until 50%. In terms of people, this activity act for the primary source of income for 2.3 million families, representing 34% of Peruvian households. Despite agriculture importance in Peruvian family lives, today no exist a cropping system either at a national or regional scale that monitoring the extension, state, or crop type. Considering this problematic, in this section you will create a straightforward methodology to **predict the crop area** in Camana (Arequipa) Valley using a Deep Neural Network.
+
+<center>
+<img src='https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg'>
+</center>
+
+### 4.1. Installing
+Before coding do not forget install and load the following packages and remenber that you can communicate with the bash console prepending an ! to the code. 
+
+```{python, eval=FALSE}
+!pip install -q tf-nightly-2.0-preview #tensorflow 2.0
+!pip install earthengine-api #earthengine API
+# Load the TensorBoard notebook extension
+%load_ext tensorboard
 ```
 
-### 4.2 Connecting to the Earth Engine - python API
+### 4.2. Authentification
+For interacting with Google services, it's necessary to authenticate (as yourself). The code below accomplishes this task.
 
-```{python}
-import ee #Earth engine Python-API
-try:
-  ee.Initialize() # Start connection with earth engine.
-except ee.EEException:
-  !earthengine authenticate # Authenticate earth engine
-  ee.Initialize()
-except:
-  print("Unexpected error:", sys.exc_info()[0])
-  raise  
+#### Google Cloud
+
+Google Cloud Storage bucket will serve as a bridge between GEE and Colab.
+```{python, eval = FALSE}
+from google.colab import auth
+auth.authenticate_user()
 ```
 
-### 4.3 Camana Valley 
+#### Google Earth Engine
 
-Optional: You can define your own study area
+```{python, eval = FALSE}
+!earthengine authenticate
+```
 
-```{python}
-# 4.3.1 Define your study area
-xmin,ymin,xmax,ymax = [-72.778645,-16.671663,-72.64865,-16.57553]
+### 4.3. Initialize and testing the software setup
 
-# 4.3.2 Creating a Feature (GeoJSON)
-crop_geojson = {'type':'Feature',
-                'properties':{},
-                'geometry': {
-                    'type': 'Polygon',
-                    'coordinates' : [[[xmin,ymax],[xmax,ymax],[xmax,ymin],[xmin,ymin],[xmin,ymax]]]
-                }
-               }
+```{python, eval = FALSE}
+# Earth Engine Python API
+import ee 
+ee.Initialize()
 
-# 4.3.3 Vizualize the Camana valley using leaflet 
+import tensorflow as tf
+print('Tensorflow version: ' + tf.__version__)
+
+import folium
+print('Folium version: ' + folium.__version__)
+
+# Define the URL format used for Earth Engine generated map tiles.
+EE_TILES = 'https://earthengine.googleapis.com/map/{mapid}/{{z}}/{{x}}/{{y}}?token={token}'
+```
+
+### 4.4. Prepare the Dataset
+
+Firstly, we define our prediction area (Camana Valley) and passing to GEE. For moving a vector to GEE, we can use the `ee.Geometry.*` module. The [GeoJSON](https://geojson.org/) spec describes in detail the type of geometries supported by GEE, including `Point` (a list of coordinates in some projection), `LineString` (a list of points), `LinearRing` (a closed LineString), and `Polygon` (a list of LinearRings where the first is a shell and subsequent rings are holes). GEE also supports **MultiPoint**, **MultiLineString**, and **MultiPolygon**. The [GeoJSON](https://geojson.org/) GeometryCollection is also supported, although it has the name **MultiGeometry** within GEE.
+
+
+```{python ,eval=FALSE}
+# 4.4.1 Prediction Area
+xmin,ymin,xmax,ymax = [-72.778645, -16.621663, -72.66865, -16.57553]
+
+xmed = (xmax + xmin)/2
+ymed = (ymax + ymax)/2
+
+# Passing a rectangle (prediction area) to Earth Engine
+Camana_valley = ee.Geometry.Rectangle([xmin,ymin,xmax,ymax])
+
 m = folium.Map(
-    location=[(ymin+ymax)/2,(xmin+xmax)/2],
-    zoom_start=12,
-    tiles='Stamen Terrain')
-folium.GeoJson(crop_geojson).add_to(m)
+    location=[ymed, xmed],
+    zoom_start=7    
+)
+folium.Rectangle([[ymax,xmin],[ymin,xmax]],popup='Camana',name='Landsat8-2018',fill=True).add_to(m)
 m
 ```
 
-```{r eval = TRUE, echo = FALSE,warning=FALSE, message = FALSE}
+```{r eval=TRUE,echo=FALSE,highlight=FALSE,warning=FALSE,message=FALSE}
+xmin =-72.778645
+ymin =-16.621663
+xmax =-72.66865
+ymax = -16.57553
 library(mapview)
 library(sf)
-
-xmin = -72.778645
-ymin = -16.671663
-xmax = -72.64865
-ymax = -16.57553
-
-pol_matrix <- matrix(c(xmin,ymax,xmax,ymax,xmax,ymin,xmin,ymin,xmin,ymax),ncol = 2,byrow = TRUE)
-
-poly_sf <- st_polygon(list(pol_matrix)) %>%
-  st_sfc %>% st_set_crs('+proj=longlat +datum=WGS84')
-
-
-mapview(poly_sf,map.types = 'Esri.WorldImagery', color = "grey20")
-```
-
-To passing vector dataset to earth engine we can use either the `ee.Geometry.*` or `ee.Feature()` functions. The [**GeoJSON**](http://geojson.org/) spec describes in detail the type of geometries supported by Earth Engine, including **Point** (a list of coordinates in some projection), **LineString** (a list of points), **LinearRing** (a closed LineString), and **Polygon** (a list of LinearRings where the first is a shell and subsequent rings are holes). Earth Engine also supports **MultiPoint**, **MultiLineString**, and **MultiPolygon**. The GeoJSON **GeometryCollection** is also supported, although it has the name MultiGeometry within Earth Engine.
-
-```{python}
-crop_area = ee.Feature(crop_geojson) #Passing a GeoJSON to earth engine
-crop_area = ee.Geometry.Polygon(crop_geojson['geometry']['coordinates']) #Creating a ee.Geometry in earth engine
-```
-
-#### 4.3 Preparing satellite data
-
-For this step will use [Earth engine](https://earthengine.google.com/) the most advanced cloud-based geospatial processing platform in the world. The components that make so great **Earth Engine** are described as follow:
-
-- **Dataset**:  A petabyte-scale archive of publicly available remotely sensed imagery and other data. Explore the data catalog.
-
-- **Compute power**: Google’s computational infrastructure optimized for parallel processing of geospatial data. Learn more from [Gorelick et al. (2017)](https://www.sciencedirect.com/science/article/pii/S0034425717302900).
-
-- Friendly **API** for python and javascript.
-
-
-For mapping crop area this post used Sentinel-2. Sentinel-2 is part of a constellation of satellites developed by ESA to operationalize the Copernicus program. Sentinel-2 is a wide-swath, high-resolution image dataset that contains 13 UINT16 spectral bands representing TOA reflectance. **Earth engine** provides images with radiometric and geometry correction. Additionally, cloud mask information is provided by means of the bit image **QA60**. The following function allows putting NA to the TOA reflectance values of clouds.
-
-
-```{python}
-# 4.3.1 Function to mask clouds using the Sentinel-2 QA band
-def mask2cloud(image):
-  qa = image.select('QA60')
-  # bits 10 and 11 are clouds and cirrus, respectively.
-  cloudsBitMask1 = (1 << 10) 
-  cloudsBitMask2 = (1 << 11)
-  # both flags should be set to zero, indicating clear conditions.
-  mask = qa.bitwiseAnd(cloudsBitMask1).eq(0).And(qa.bitwiseAnd(cloudsBitMask2).eq(0))
-  return image.updateMask(mask).divide(10000)
-```
-
-#### 4.4 Mapping and filtering the Sentinel-2 dataset
-
-In this part we mapping, filtering and reducing the entire Sentinel-2 dataset, considering the following:
-
-- 1. Select only bands with spatial resolution of 10 and 20 meters.
-
-- 2. Filter considering the cloud pixel percentage (< 30%).
-
-- 3. Filter considering a date (we just selecting two years.)
-
-- 4. Apply **mask2cloud** to each image.
-
-- 5. Get the median of the ImageCollection.
-
-- 6. Clip the image considering study area.
-
-
-To apply a function on all the elements of specified ImageCollection or FeatureCollection you can use `.map()`. The only argument to map() is a function which takes one parameter: an `ee.Image`. In other hand, earth engine offers a variety of convenience methods for filtering image collections (see bellow).
-
-
-```{python}
-# 4.3.2 Getting a median Sentinel-2 image from the period 2016-2018 free of clouds.
-
-bands = ['B2','B3','B4','B5','B6','B7','B8']
-
-sentinel_query = ee.ImageCollection("COPERNICUS/S2")\
-                   .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE',30))\
-                   .filterDate('2016-01-01','2018-12-31')\
-                   .map(mask2cloud)\
-                   .median()\
-                   .select(bands)\
-                   .clip(crop_area)
-```
-
-#### 4.4 Generating  train/test dataset using MCD12Q1
-
-The following example uses `*.sample()` function to generate training and testing dataset from a MODIS reference image ([**MCD12Q1 MODIS Land Cover Type Yearly Global 500m**](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1)). Band information about MCD12Q1 was scrapping of the [Earth Engine Catalog - MCD12Q1](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1) using [beautifulsoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/).
-
-```{python}
-modis = ee.ImageCollection("MODIS/006/MCD12Q1")\
-          .select('LC_Type1')\
-          .mode()
-
-db = sentinel_query.addBands(modis)\
-                   .clip(crop_area)\
-                   .sample(numPixels = 1000, seed = 100, scale = 30)\
-                   .getInfo()          
+polygon_m = matrix(c(xmin,ymin,xmin,ymax,xmax,ymax,xmax,ymin,xmin,ymin),ncol=2, byrow=TRUE)
+camana = st_sfc(st_polygon(list(polygon_m)))
+st_crs(camana) = 4326
+mapview(camana,popup='Camana Valley')
 ```
 
 
-```{python}
-import urllib # working with URLs
-import bs4 # Web scrapping
-from collections import OrderedDict  #Create a Ordered Dict!
-```
+Next, you create a visualization (with folium!) of the train and test dataset. We've already generated some points with the label agriculture/non-agriculture.
 
-```{python}
-# mcd12q1 webpage
-eepage = urllib.request.urlopen('https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MCD12Q1')
-soup = bs4.BeautifulSoup(eepage, 'html.parser') #getting the html code
-table = soup.findAll(attrs={'class': 'eecat'})[1]  #getting the tables with class = 'eecat'
-
-Color = [x.string for x in table.findAll('span')] #get color values
-
-table_vt = table.findAll('td')
-
-Value = [x.string for x in table_vt[0:len(table_vt):3]] 
-Text = [x.string for x in table_vt[2:len(table_vt):3]] 
-
-
-description_table = pd.DataFrame(OrderedDict({'value':Value,'color':Color,'description':Text}))
-```
-
-#### 4.5 Using One Hot encodings for land-use classes
-
-Many times in deep learning you will have a **Y** vector with numbers ranging from 0 to C-1, where C is the number of classes. If C is for example 4, then you might have the following **Y** vector which you will need to convert as follows:
-
-![](https://www.tensorflow.org/images/feature_columns/categorical_column_with_identity.jpg)
-
-This is called a "one hot" encoding, because in the converted representation exactly one element of each column is "hot" (meaning set to 1). In tensorflow, you can use the function `tf.one_hot(labels, depth, axis)` to performed it.
-
-```{python}
-def one_hot_matrix(labels,C):
-    one_hot_matrix = tf.one_hot(labels, C, axis=0)
-    with tf.Session() as sess:
-      one_hot = sess.run(one_hot_matrix)
-    return one_hot
-```
-
-```{python}
-lctype = [] #blank list
-
-# Creating a DataFrame from a dict(earth engine)
-for x in range(len(db['features'])):
-  lctype.append(db['features'][x]['properties']) 
-df_landuse = pd.DataFrame(lctype).sort_values(['LC_Type1'])
-print(df_landuse.head(4))
-
-#new classes
-classes = pd.DataFrame({'old':df_landuse['LC_Type1'].unique(),'new':np.arange(7)})
-
-#factor R data type in python ('category').
-df_landuse['LC_Type1'] = df_landuse['LC_Type1'].astype('category')
-df_landuse['LC_Type1'].cat.categories = (np.arange(7))
-```
-
-```{python}
-Y = df_landuse.iloc[:,-1]
-X = df_landuse.iloc[:,0:7]
-
-X_train, X_test, Y_train, Y_test = train_test_split(X,Y,test_size = 0.2)
-
-X_test = X_test.values.T
-X_train = X_train.values.T
-Y_train = one_hot_matrix(Y_train,C = 7)
-Y_test = one_hot_matrix(Y_test,C = 7)
-```
-
-#### 4.6 Building a three-layer neural network
-
-LINEAR->RELU->LINEAR->RELU->LIN
-
-In this section finally, we will build a deep neural network using as a framework ![TensorFlow](https://en.wikipedia.org/wiki/TensorFlow). In tensorflow you just define the follow:
-
-- Initialize variables (tf.placeholder)
-
-- Forward propagation
-
-- Compute_cost
-
-- Random_mini_batches
+- Train dataset (550 points):
+  - 275 labeled as "agriculture"
+  - 275 labeled as "non agriculture" 
   
-```{python}
-def create_placeholders(n_x, n_y):
-    X = tf.placeholder(tf.float32, name = 'X')
-    Y = tf.placeholder(tf.float32, name = 'Y')    
-    return X, Y
+- Test dataset (100 points):
+  - 50  labeled as "agriculture"
+  - 50  labeled as "non agriculture"
+
+```{python, eval=FALSE}
+# 4.4.2 Importing the train/test dataset
+import pandas as pd
+import numpy as np
+
+train_agriculture = ee.FeatureCollection('users/csaybar/DLdemos/train_set') 
+test_agriculture = ee.FeatureCollection('users/csaybar/DLdemos/test_set')
+
+# Passing data of Earth Engine to Python(pandas)
+xy_agr = train_agriculture.geometry().getInfo()['coordinates']
+df_agr = pd.DataFrame(xy_agr,columns=['Longitude','Latitude'])
+df_agr['class'] = 'train'
+
+xy_nonagr = test_agriculture.geometry().getInfo()['coordinates']
+df_nonagr = pd.DataFrame(xy_nonagr,columns=['Longitude','Latitude'])
+df_nonagr['class'] = 'test'
+
+#Create a boundary Conditions
+maxmincoord = pd.concat([df_nonagr[['Longitude','Latitude']].agg({'min','max'}),
+                         df_agr[['Longitude','Latitude']].agg({'min','max'})])
+xmax, xmin = maxmincoord['Longitude'].max(), maxmincoord['Longitude'].min()
+ymax, ymin = maxmincoord['Latitude'].max(), maxmincoord['Latitude'].min()
+db_area = ee.Geometry.Rectangle([xmin, ymin, xmax, ymax])
+
+# Passing the dataset to folium!
+df_agr.apply(lambda row: folium.CircleMarker(location=[row['Latitude'], row['Longitude']],
+                                             radius=10, fill_color='blue').add_to(m), axis=1)
+
+df_nonagr.apply(lambda row: folium.CircleMarker(location=[row['Latitude'], row['Longitude']],color='red',
+                                                radius=10, fill_color='red').add_to(m), axis=1)
+m
 ```
 
 
-#### 4.6.1 Initialize the parameters.
-
-```{python}
-def initialize_parameters():
-    
-    tf.set_random_seed(100)
-            
-    #first layer
-    W1 = tf.get_variable("W1", [15, 7], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b1 = tf.get_variable("b1", [15, 1], initializer=tf.zeros_initializer())
-    
-    #second layer
-    W2 = tf.get_variable("W2", [10, 15], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b2 = tf.get_variable("b2", [10, 1], initializer=tf.zeros_initializer())
-    
-    #third layer
-    W3 = tf.get_variable("W3", [7, 10], initializer=tf.contrib.layers.xavier_initializer(seed=1))
-    b3 = tf.get_variable("b3", [7, 1], initializer=tf.zeros_initializer())
-
-
-    parameters = {"W1": W1,
-                  "b1": b1,
-                  "W2": W2,
-                  "b2": b2,
-                  "W3": W3,
-                  "b3": b3}
-    
-    return parameters
+```{r eval=TRUE,echo=FALSE,highlight=FALSE,warning=FALSE,message=FALSE}
+library(dplyr)
+library(sp)
+library(sf)
+library(mapview)
+dataset = read.csv('../../data/px.csv')[2:4]
+coordinates(dataset) = ~Longitude+Latitude
+dt = st_as_sf(dataset)
+st_crs(dt) = 4326
+mapview(dt,zcol = "class")
 ```
 
-#### 4.6.1 Initialize the parameters.
+You will obtain the input data for mapping the **Camana crop area** of  [Landsat 8 OLI/TIRS (L8)](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR). GEE provides L8 images with radiometric and geometry correction. Additionally, **cloud mask information** is provided by means of the bit image `pixel_qa`. The following function allows putting NA to the TOA reflectance values of clouds.
 
-```{python}
-def forward_propagation(X, parameters):    
-    # Retrieve the parameters from the dictionary "parameters" 
-    W1 = parameters['W1']
-    b1 = parameters['b1']
-    W2 = parameters['W2']
-    b2 = parameters['b2']
-    W3 = parameters['W3']
-    b3 = parameters['b3']
-    
-    ### START CODE HERE ### (approx. 5 lines)    # Numpy Equivalents:
-    Z1 = tf.add(tf.matmul(W1, X), b1)              # Z1 = np.dot(W1, X) + b1
-    A1 = tf.nn.relu(Z1)                            # A1 = relu(Z1)
-    Z2 = tf.add(tf.matmul(W2, A1), b2)             # Z2 = np.dot(W2, a1) + b2
-    A2 = tf.nn.relu(Z2)                            # A2 = relu(Z2)
-    Z3 = tf.add(tf.matmul(W3, A2), b3)             # Z3 = np.dot(W3,Z2) + b3
-    ### END CODE HERE ###
-    
-    return Z3
-```
-
-
-```{python}
-def random_mini_batches(X, Y, mini_batch_size = 64, seed = 0):
-    """
-    Creates a list of random minibatches from (X, Y)
-    
-    Arguments:
-    X -- input data, of shape (input size, number of examples)
-    Y -- true "label" vector (containing 0 if cat, 1 if non-cat), of shape (1, number of examples)
-    mini_batch_size - size of the mini-batches, integer
-    seed -- this is only for the purpose of grading, so that you're "random minibatches are the same as ours.
-    
-    Returns:
-    mini_batches -- list of synchronous (mini_batch_X, mini_batch_Y)
-    """
-    
-    m = X.shape[1]                  # number of training examples
-    mini_batches = []
-    np.random.seed(seed)
-    
-    # Step 1: Shuffle (X, Y)
-    permutation = list(np.random.permutation(m))
-    shuffled_X = X[:, permutation]
-    shuffled_Y = Y[:, permutation].reshape((Y.shape[0],m))
-
-    # Step 2: Partition (shuffled_X, shuffled_Y). Minus the end case.
-    num_complete_minibatches = math.floor(m/mini_batch_size) # number of mini batches of size mini_batch_size in your partitionning
-    for k in range(0, num_complete_minibatches):
-        mini_batch_X = shuffled_X[:, k * mini_batch_size : k * mini_batch_size + mini_batch_size]
-        mini_batch_Y = shuffled_Y[:, k * mini_batch_size : k * mini_batch_size + mini_batch_size]
-        mini_batch = (mini_batch_X, mini_batch_Y)
-        mini_batches.append(mini_batch)
-    
-    # Handling the end case (last mini-batch < mini_batch_size)
-    if m % mini_batch_size != 0:
-        mini_batch_X = shuffled_X[:, num_complete_minibatches * mini_batch_size : m]
-        mini_batch_Y = shuffled_Y[:, num_complete_minibatches * mini_batch_size : m]
-        mini_batch = (mini_batch_X, mini_batch_Y)
-        mini_batches.append(mini_batch)
-    
-    return mini_batches
-```
-
-
-```{python}
-def compute_cost(Z3, Y):
+```{python,eval=FALSE}
+def maskS2clouds(img):
+  '''  
+  Function to mask clouds based on the pixel_qa band of Landsat 8 SR data. See:
+  https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR
   
-    # to fit the tensorflow requirement for tf.nn.softmax_cross_entropy_with_logits(...,...)
-    logits = tf.transpose(Z3)
-    labels = tf.transpose(Y)
-    
-    ### START CODE HERE ### (1 line of code)
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=labels))
-    ### END CODE HERE ###
-    
-    return cost
+  Params:
+  -------
+  - img: image input Landsat 8 SR image
+  
+  Return:
+  -------
+  cloudmasked Landsat 8 image
+  '''
+  cloudShadowBitMask = (1 << 3)
+  cloudsBitMask = (1 << 5)
+  # Get the pixel QA band.
+  qa = img.select('pixel_qa')
+  # Both flags should be set to zero, indicating clear conditions.
+  mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)\
+           .And(qa.bitwiseAnd(cloudsBitMask).eq(0))
+  return img.updateMask(mask)
+```
+
+Now you filtering and reducing the entire Landsat-8 dataset, considering the following:
+
+1. Select only bands with spatial resolution of **30 meters**.
+
+2. Filter considering the cloud pixel percentage by scene (< 20%).
+
+3. Filter considering a date (we just selecting 1 years)
+
+4. Apply **mask2cloud** to each image.
+
+5. Get the median of the ImageCollection.
+
+6. Clip the image considering study area.
+
+To apply a function on all the elements of specified `ImageCollection` or `FeatureCollection` you can use `.map()`. The only argument that map() receive is a function which takes one parameter: an `ee.Image`.
+
+
+```{python}
+# 4.4.3 Prepare the satellite image (Landsat-8)
+RGB_bands = ['B4','B3','B2'] #RGB
+NDVI_bands = ['B5','B4'] #NIR
+
+l8 = ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")\
+               .filterBounds(db_area)\
+               .filterDate('2018-01-01', '2018-12-31')\
+               .filter(ee.Filter.lt('CLOUD_COVER', 20))\
+               .map(maskS2clouds)\
+               .median()\
+               .multiply(0.0001)
+
+l8_ndvi = l8.normalizedDifference(NDVI_bands).rename(['NDVI'])
+l8_rgb = l8.select(RGB_bands).rename(['R','G','B']) 
+l8 = l8_rgb.addBands(l8_ndvi)
 ```
 
 
 ```{python}
-def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
-          num_epochs = 1500, minibatch_size = 32, print_cost = True):
-    
-  ops.reset_default_graph()                         # to be able to rerun the model without overwriting tf variables
-  tf.set_random_seed(1)                             # to keep consistent results
-  seed = 3                                          # to keep consistent results
-  (n_x, m) = X_train.shape                          # (n_x: input size, m : number of examples in the train set)
-  n_y = Y_train.shape[0]                            # n_y : output size
-  costs = []                                        # To keep track of the cost
-    
-  # Create Placeholders of shape (n_x, n_y)
-  X, Y = create_placeholders(n_x, n_y)    
+# Create a visualization with folium
+visParams_l8 = {    
+  'bands': ['R', 'G', 'B'],
+  'min': 0,
+  'max': 0.5,
+  'gamma': 1.4,
+}
 
-  # Initialize parameters    
-  parameters = initialize_parameters()    
-    
-  # Forward propagation: Build the forward propagation in the tensorflow graph    
-  Z3 = forward_propagation(X, parameters)
-    
-  # Cost function: Add cost function to tensorflow graph    
-  cost = compute_cost(Z3, Y)    
-    
-  # Backpropagation: Define the tensorflow optimizer. Use an AdamOptimizer.    
-  optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate).minimize(cost)
-    
-  # Initialize all the variables
-  init = tf.global_variables_initializer()
+l8Mapid = l8.getMapId(visParams_l8)
 
-  # Start the session to compute the tensorflow graph
-  with tf.Session() as sess:
-        
-    # Run the initialization
-    sess.run(init)
-        
-    # Do the training loop
-    for epoch in range(num_epochs):
+folium.TileLayer(
+  tiles=EE_TILES.format(**l8Mapid),
+  attr='Google Earth Engine',
+  overlay=True,
+  name='Landsat8 2018',
+).add_to(m)
 
-      epoch_cost = 0.                       # Defines a cost related to an epoch
-      num_minibatches = int(m / minibatch_size) # number of minibatches of size minibatch_size in the train set
-      seed = seed + 1
-      minibatches = random_mini_batches(X_train, Y_train, minibatch_size, seed)
 
-      for minibatch in minibatches:
+m.add_child(folium.LayerControl())
+m
+```
 
-        # Select a minibatch
-        (minibatch_X, minibatch_Y) = minibatch
-                
-        # IMPORTANT: The line that runs the graph on a minibatch.
-        # Run the session to execute the "optimizer" and the "cost", the feedict should contain a minibatch for (X,Y).
-        _ , minibatch_cost = sess.run([optimizer, cost], feed_dict={X: minibatch_X, Y: minibatch_Y})
-                          
-        epoch_cost += minibatch_cost / num_minibatches
 
-      # Print the cost every epoch
-      if print_cost == True and epoch % 100 == 0:
-        print ("Cost after epoch %i: %f" % (epoch, epoch_cost))
-      if print_cost == True and epoch % 5 == 0:
-        costs.append(epoch_cost)
-                
-    # plot the cost
-    plt.plot(np.squeeze(costs))
-    plt.ylabel('cost')
-    plt.xlabel('iterations (per tens)')
-    plt.title("Learning rate =" + str(learning_rate))
-    plt.show()
+For the collocation of the train/test datasets to each L8 grid cell value you will use the `ee.Image.sampleRegions` function. Note that geometries will be snapped to pixel centers (nearest center approximation).
 
-    # lets save the parameters in a variable
-    parameters = sess.run(parameters)
-    print ("Parameters have been trained!")
+```{python}
+# 2.4.3 Extract pixels values considering train/test dataset
+train_db = l8.sampleRegions(collection=train_agriculture, properties=['class'], scale=30)
+test_db = l8.sampleRegions(collection=test_agriculture, properties=['class'], scale=30)
 
-    # Calculate the correct predictions
-    correct_prediction = tf.equal(tf.argmax(Z3), tf.argmax(Y))
+```
 
-    # Calculate accuracy on the test set
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
-    print ("Train Accuracy:", accuracy.eval({X: X_train, Y: Y_train}))
-    print ("Test Accuracy:", accuracy.eval({X: X_test, Y: Y_test}))
-        
-    return parameters
+Unfortunately, you do not can use Tensorflow directly in Earth Engine. To overcome this problem we materialize the train/test dataset in a place where the TensorFlow model has access to them (Cloud Storage bucket). 
+
+```{python}
+# 2.4.4 Save results in Google Cloud Storage
+outputBucket = 'bag_csaybar'
+
+# Make sure the bucket exists.
+print('Found Cloud Storage bucket.' if tf.io.gfile.exists('gs://' + outputBucket) 
+    else 'Output Cloud Storage bucket does not exist.')
+
+trainFilePrefix = 'TrainingAgriculture_'
+testFilePrefix = 'TestAgriculture_'
+
+# Create the tasks for passing of GEE to Google storage
+trainingTask = ee.batch.Export.table.toCloudStorage(
+  collection=train_db,
+  description='Training Export',
+  fileNamePrefix=trainFilePrefix,
+  bucket=outputBucket,
+  fileFormat='TFRecord')
+
+testingTask = ee.batch.Export.table.toCloudStorage(
+  collection=test_db,
+  description='Testing Export',
+  fileNamePrefix=testFilePrefix,
+  bucket=outputBucket,
+  fileFormat='TFRecord')
+
+trainingTask.start()
+testingTask.start()
+```
+
+You can be monitoring your progress with the code below:
+
+```{python}
+import time 
+while trainingTask.active():
+  print('Polling for task (id: {}).'.format(trainingTask.id))
+  time.sleep(5)
+while testingTask.active():
+  print('Polling for task (id: {}).'.format(testingTask.id))
+  time.sleep(5)
+
+print('Done!')
+```
+
+### 4.5. Creating a tf.data.Dataset from a TFRecord file
+
+```{python}
+# Fullname train/test db
+fileNameSuffix = 'ee_export.tfrecord.gz'
+trainFilePath = 'gs://' + outputBucket + '/' + trainFilePrefix + fileNameSuffix
+testFilePath = 'gs://' + outputBucket + '/' + testFilePrefix + fileNameSuffix
+```
+
+Passing data from the TFRecord file into a tf.data.Dataset. Preprocess the dataset to get it into a suitable format for input to the keras model. For getting more details about  `tf.data.Dataset` see the next [TFdoc](https://www.tensorflow.org/guide/premade_estimators#create_input_functions).
+
+```{python}
+def input_fn(fileNames, numEpochs=None, shuffle=True, batchSize=16):
+  # Creates a `TFRecordDataset` 
+  dataset = tf.data.TFRecordDataset(fileNames, compression_type='GZIP')
+
+  feature_columns = {
+    'R': tf.io.FixedLenFeature([], dtype=tf.float32),  
+    'G': tf.io.FixedLenFeature([], dtype=tf.float32),  
+    'B': tf.io.FixedLenFeature([], dtype=tf.float32),    
+    'NDVI': tf.io.FixedLenFeature([], dtype=tf.float32),    
+    'class': tf.io.FixedLenFeature([], dtype=tf.float32)
+  }
+  
+  def parse(example_proto):
+    parsed_features = tf.io.parse_single_example(example_proto, feature_columns)    
+    # Separate the class labels from the training features
+    labels = parsed_features.pop('class')
+    return parsed_features, tf.cast(labels, tf.int32)
+  dataset = dataset.map(parse, num_parallel_calls=5)
+  if shuffle:
+    dataset = dataset.shuffle(buffer_size = batchSize * 10)
+  dataset = dataset.batch(batchSize)
+  dataset = dataset.repeat(numEpochs)
+  
+  return dataset
+```
+
+```{python}
+train_dba = input_fn(trainFilePath,100,True,32)
+test_dba = input_fn(testFilePath, numEpochs=1, batchSize=1, shuffle=False)
+```
+
+### 4.6. Create a DNN model with keras
+
+Here you will create a deep neural network model with:
+
+  - 2 layers (10x10 nodes).
+  - 1 dropout layer.
+  - 1 output layer.
+
+Additionally, `Early Stopping`, `Tensorboard` and `ModelCheckpoint` callbacks were added. A callback is a set of functions to be applied at given stages of the training procedure. You can found more details [here](https://keras.io/callbacks/).
+
+```{python}
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow import feature_column
+import os
+import datetime
+
+bands = ['R','G','B','NDVI']
+
+# Create a dense `Tensor` based on given `feature_columns`
+feature_columns = [feature_column.numeric_column(x) for x in bands]
+feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
+
+#initialize dnn model
+he_init = tf.keras.initializers.he_uniform(seed=None)
+
+# Define the layers in the model.
+model = tf.keras.Sequential([
+  feature_layer,  
+  layers.Dense(10, activation='relu',kernel_initializer=he_init),
+  tf.keras.layers.Dropout(0.2),
+  layers.Dense(10, activation='relu',kernel_initializer=he_init),
+  layers.Dense(1, activation='sigmoid',kernel_initializer=he_init)
+])
+
+#Callbacks
+logdir = os.path.join("logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+tensorboard_callback = tf.keras.callbacks.TensorBoard(logdir, histogram_freq=1)
+es = EarlyStopping(monitor='val_loss', patience=10)
+mcp = ModelCheckpoint(filepath='best_model.h5', monitor='val_loss', save_best_only=True)
+
+
+# Compile the model with the specified loss function.
+model.compile(optimizer=keras.optimizers.SGD(momentum=0.01, nesterov=True),
+              loss='binary_crossentropy',              
+              metrics=['accuracy'])
+
+# Fit the model to the training data.
+model.fit(x=train_dba,
+          epochs=15,
+          steps_per_epoch=100,
+          callbacks=[tensorboard_callback,es,mcp],
+          validation_data=test_dba)
+```
+
+Starts tensorboard!
+
+```{python}
+%tensorboard --logdir logs
+```
+
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/tensorboard.png'>
+
+```{python}
+model.load_weights("best_model.h5")
+model.evaluate(x = test_dba)
+```
+
+### 4.7. Prediction
+
+At this step you must be have the model fitted, great work!. In this section you export l8 imagery using ee.batch.Export.image.toCloudStorage a similar.
+
+```{python}
+l8 = ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")\
+               .filterBounds(Camana_valley)\
+               .filterDate('2018-01-01', '2018-12-31')\
+               .filter(ee.Filter.lt('CLOUD_COVER', 20))\
+               .map(maskS2clouds)\
+               .median()\
+               .multiply(0.0001)\
+               .clip(Camana_valley)
+
+l8_ndvi = l8.normalizedDifference(NDVI_bands).rename(['NDVI'])
+l8_rgb = l8.select(RGB_bands).rename(['R','G','B']) 
+l8 = l8_rgb.addBands(l8_ndvi)
+```
+
+```{python}
+imageFilePrefix = 'Camana_DNN'
+
+# Specify patch and file dimensions.
+imageExportFormatOptions = {
+  'patchDimensions': [128, 128],
+  'maxFileSize': 104857600,
+  'compressed': True
+}
+
+# Setup the task.
+imageTask = ee.batch.Export.image.toCloudStorage(
+  image=l8,
+  description='Image Export',
+  fileNamePrefix=imageFilePrefix,
+  bucket=outputBucket,
+  scale=30,
+  fileFormat='TFRecord',
+  region=Camana_valley.getInfo()['coordinates'],
+  formatOptions=imageExportFormatOptions,
+)
+
+imageTask.start()
+```
+
+```{python}
+import time 
+while imageTask.active():
+  print('Polling for task (id: {}).'.format(imageTask.id))
+  time.sleep(5)
 ```
 
