@@ -464,7 +464,7 @@ model.evaluate(x = test_dba)
 
 ### 4.7. Prediction
 
-At this step you must be have the model fitted, great work!. In this section you export l8 imagery using ee.batch.Export.image.toCloudStorage a similar.
+Similar to the train/test dataset you will prepare and export the Camana L8 image (prediction area).
 
 ```{python}
 l8 = ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")\
@@ -512,4 +512,171 @@ while imageTask.active():
   print('Polling for task (id: {}).'.format(imageTask.id))
   time.sleep(5)
 ```
+
+Now it's time to classify the image that was previously exported from Earth Engine. If the exported image is large, it will be split into multiple TFRecord files in its destination folder. There will also be a JSON sidecar file called "the mixer" that describes the format and georeferencing of the image. Here we will find the image files and the mixer file, getting some info out of the mixer that will be useful during model inference.
+
+
+```{python}
+filesList = !gsutil ls 'gs://'{outputBucket}
+exportFilesList = [s for s in filesList if imageFilePrefix in s]
+
+# Get the list of image files and the JSON mixer file.
+imageFilesList = []
+jsonFile = None
+for f in exportFilesList:
+  if f.endswith('.tfrecord.gz'):
+    imageFilesList.append(f)
+  elif f.endswith('.json'):
+    jsonFile = f
+
+# Make sure the files are in the right order.
+print(jsonFile)
+```
+
+
+The mixer contains metadata and georeferencing information for the exported patches, each of which is in a different file. Read the mixer to get some information needed for prediction.
+
+
+```{python}
+import json
+from pprint import pprint
+
+# Load the contents of the mixer file to a JSON object.
+jsonText = !gsutil cat {jsonFile}
+# Get a single string w/ newlines from the IPython.utils.text.SList
+mixer = json.loads(jsonText.nlstr)
+pprint(mixer)
+```
+
+You can feed the list of files (imageFilesList) directly to the TFRecordDataset constructor to make a combined dataset on which to perform inference. The input needs to be preprocessed differently than the training and testing. Mainly, this is because the pixels are written into records as patches, we need to read the patches in as one big tensor (one patch for each band), then flatten them into lots of little tensors.
+
+```{python}
+# Define the patchDimension
+PATCH_WIDTH = 128
+PATCH_HEIGHT = 128
+PATCH_DIMENSIONS_FLAT = [PATCH_WIDTH * PATCH_HEIGHT, 1]
+
+# Note that the tensors are in the shape of a patch, one patch for each band.
+imageColumns = [
+  tf.io.FixedLenFeature(shape=PATCH_DIMENSIONS_FLAT, dtype=tf.float32) 
+    for k in bands
+]
+    
+featuresDict = dict(zip(bands, imageColumns))
+
+def predict_input_fn(fileNames):
+  
+  dataset = tf.data.TFRecordDataset(fileNames, compression_type='GZIP')
+ 
+  def parse_image(example_proto):
+    parsed_features = tf.io.parse_single_example(example_proto, featuresDict)
+    return parsed_features
+  
+  dataset = dataset.map(parse_image, num_parallel_calls=4)
+
+  # Romper nuestros tensores largos en muchos pequeños. 
+  #https://stackoverflow.com/questions/50530806/using-flat-map-in-tensorflows-dataset-api
+  dataset = dataset.flat_map(lambda features: tf.data.Dataset.from_tensor_slices(features))
+  
+  
+  # Read in batches corresponding to patch size.
+  dataset = dataset.batch(PATCH_WIDTH * PATCH_HEIGHT)
+  
+  return dataset
+
+dsad = predict_input_fn(fileNames=imageFilesList)
+
+predictions = model.predict(predict_input_fn(fileNames=imageFilesList))
+```
+
+Now that there's a list of class probabilities in predictions, it's time to write them back into a file, optionally including a class label which is simply the index of the maximum probability. We'll write directly from TensorFlow to a file in the output Cloud Storage bucket.
+
+Iterate over the list, compute class label and write the class and the probabilities in patches. Specifically, we need to write the pixels into the file as patches in the same order they came out. The records are written as serialized tf.train.Example protos. This might take a while.
+
+```{python}
+outputImageFile = 'gs://' + outputBucket + '/Arequipa.TFRecord'
+print('Writing to file ' + outputImageFile)
+```
+  
+```{python}
+# Instantiate the writer.
+writer = tf.io.TFRecordWriter(outputImageFile)
+
+# Every patch-worth of predictions we'll dump an example into the output
+# file with a single feature that holds our predictions. Since our predictions
+# are already in the order of the exported data, the patches we create here
+# will also be in the right order.
+patch = []
+curPatch = 1
+for  prediction in predictions:
+  patch.append(prediction)
+  
+  if (len(patch) == PATCH_WIDTH * PATCH_HEIGHT):
+    print('Done with patch ' + str(curPatch) + '...')
+    # Create an example
+    example = tf.train.Example(
+      features=tf.train.Features(
+        feature={
+          'Agriculture_prob': tf.train.Feature(
+              float_list=tf.train.FloatList(
+                  value=patch))
+        }
+      )
+    )
+    # Escriba el ejemplo en el archivo y borre nuestra matriz de parches para que esté listo para
+    # otro lote de ID de clase.
+    writer.write(example.SerializeToString())
+    patch = []
+    curPatch += 1 
+
+writer.close()
+```
+
+### 4.8 Upload the classifications to an Earth Engine asset
+
+At this stage, there should be a predictions TFRecord file sitting in the output Cloud Storage bucket. Use the gsutil command to verify that the predictions image (and associated mixer JSON) exist and have non-zero size.
+
+```{python}
+!gsutil ls -l {outputImageFile}
+```
+
+Upload the image to Earth Engine directly from the Cloud Storage bucket with the earthengine command. Provide both the image TFRecord file and the JSON file as arguments to earthengine upload.
+
+```{python}
+# REPLACE WITH YOUR USERNAME:
+USER_NAME = 'csaybar'
+outputAssetID = 'users/' + USER_NAME + '/Camana_demo'
+print('Writing to ' + outputAssetID)
+```
+
+```{python}
+# Start the upload.
+!earthengine upload image --asset_id={outputAssetID} {outputImageFile} {jsonFile}
+```
+
+Display the vector of class probabilities as an RGB image with colors corresponding to the probability of bare, vegetation, water in a pixel. Also display the winning class using the same color palette.
+
+```{python}
+predictionsImage = ee.Image(outputAssetID).gte(0.505)
+
+probabilityVis = {'bands': ['Agriculture_prob'],
+                   'min': 0,
+                   'max': 1
+                 }
+
+probabilityMapid = predictionsImage.getMapId(probabilityVis)
+
+map = folium.Map(location=[-16.7,-72.5],max_zoom=8,prefer_canvas=True)
+folium.TileLayer(
+  tiles=EE_TILES.format(**probabilityMapid),
+  attr='Google Earth Engine',
+  overlay=True,
+  name='probability',
+).add_to(map)
+map.add_child(folium.LayerControl())
+map
+```
+
+
+
 
