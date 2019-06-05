@@ -18,7 +18,8 @@
       <pubDate>Thu, 30 May 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
       <guid>/post/eetf/</guid>
-      <description>Topics Create a training/testing dataset (in a TFRecord format) using Earth Engine. Create functions for parse data (TFRecord -&amp;gt; tf.data.Dataset). Training and Test a simple Vanilla Deep Neural Network using tensorflow 2.0. Making predictions on image data exported from Earth Engine in TFRecord format. Upload your results to Earth Engine (asset).   1. Introduction Deep learning has dramatically improved the state-of-the-art in various science domains.</description>
+      <description>This notebook has been inspired by the Chris Brown &amp;amp; Nick Clinton EarthEngine + Tensorflow presentation. It shows the step by step how to integrate Google Earth Engine and TensorFlow 2.0 in the same pipeline (EE-&amp;gt;Tensorflow-&amp;gt;EE).
+  Topics Create a training/testing dataset (in a TFRecord format) using Earth Engine. Create functions for parse data (TFRecord -&amp;gt; tf.</description>
     </item>
     
     <item>

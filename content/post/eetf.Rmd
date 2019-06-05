@@ -8,7 +8,16 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,eval = FALSE)
 ```
-|
+
+<center>
+<a href="https://colab.research.google.com/github/csaybar/EEwPython/blob/master/dnn_demo.ipynb"><img align="left" src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab" title="Open and Execute in Google Colaboratory"></a>
+</center>
+
+<br>
+
+
+This notebook has been inspired by the [Chris Brown & Nick Clinton EarthEngine + Tensorflow presentation](https://www.youtube.com/watch?v=w-1xfF0IaeU). It shows the step by step how to integrate Google Earth Engine and TensorFlow 2.0 in the same pipeline (EE->Tensorflow->EE).
+
 <center>
 <img src="https://raw.githubusercontent.com/csaybar/EEwPython/master/images/colab_ee_integration.png">
 </center>  
@@ -26,7 +35,7 @@ knitr::opts_chunk$set(echo = TRUE,eval = FALSE)
 
 ## 1. Introduction
 
-Deep learning has dramatically improved the state-of-the-art in various science domains. For remote sensing, its potential has not been thoroughly explored. This could be related to the problematic incorporation of spectral & spatial features into a regular deep learning classification scheme or the huge pre-processing that satellite images could need it. Hence, this post aims to teach you how to create a painless deep learning pipeline integrating [Google Earth engine](https://earthengine.google.com/) for acquiring spectral & spatial data and [tensorflow](https://www.tensorflow.org/?hl=en) for train and test the model and make predictions.
+Deep learning has dramatically improved the state-of-the-art in various science domains. For remote sensing, its potential has not been thoroughly explored. This could be related to the problematic incorporation of spectral & spatial features into a regular deep learning classification scheme or the huge pre-processing that satellite images could need it. Hence, this post aims to teach you how to create a painless deep learning workflow integrating [Google Earth engine](https://earthengine.google.com/) for acquiring spectral & spatial data and [tensorflow](https://www.tensorflow.org/?hl=en) for train and test the model and make predictions.
 
 
 ## 2. What is Google Earth Engine (GEE)?
@@ -45,7 +54,7 @@ In my opinion, the **Python wrapper library** (used in this post) is the best ch
 - Possibility to integrate with  ML/DL frameworks.
 - Many plotting options (folium, plotly, matplotlib, seaborn ,etc.).
 
-One more thing!, it's possible to run the Earth Engine Python API in a cloud environment for free, See this section of our [EE course introduction](https://colab.research.google.com/github/csaybar/EEwPython/blob/dev/1_Introduction.ipynb).
+One more thing!, it's possible to run the Earth Engine Python API in a cloud environment for free. See the introduction of the [EEcourse](https://colab.research.google.com/github/csaybar/EEwPython/blob/dev/1_Introduction.ipynb) for more details.
 
 ## 3.  Deep Neural Network (DNN)
 
@@ -63,30 +72,60 @@ A DNN is simply a neural network with more than two layers. The main steps for b
 
 The second step could be  a little intimidating, but don't worry about it!. **tf.keras**, the TensorFlow's high-level API, only need that you define the forward propagation correctly and all the steps further down will make automatically. This post does not intend to introduce the algorithm, check out this [repo](https://github.com/csaybar/DLcoursera) for a from zero (numpy) implementation.
 
-## 4. Crop Area estimation in Camana Valley
+## 4. Crop Area estimation in Camana Valley (DEMO)
 
-Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more critical in rural areas where the contribution of GDP increase until 50%. In terms of people, this activity act for the primary source of income for 2.3 million families, representing 34% of Peruvian households. Despite agriculture importance in Peruvian family lives, today no exist a cropping system either at a national or regional scale that monitoring the extension, state, or crop type. Considering this problematic, in this section you will create a straightforward methodology to **predict the crop area** in Camana (Arequipa) Valley using a Deep Neural Network.
+Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more critical in rural areas where the contribution of GDP increase until 50%. In terms of people, this activity act for the primary source of income for 2.3 million families, representing 34% of Peruvian households. Despite agriculture importance in Peruvian family lives, today no exist a cropping system either at a national or regional scale that monitoring the extension, state, or crop type. Considering this problematic, in this section **you** will create a straightforward methodology to **predict the crop area** in Camana (Arequipa) Valley using a Deep Neural Network.
 
 <center>
 <img src='https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg'>
 </center>
+
+```{python}
+#Mapdisplay: Display ee.Features and ee.Images using folium.
+
+def Mapdisplay(center, dicc, Tiles="OpensTreetMap",zoom_start=10):
+    '''
+    :param center: Center of the map (Latitude and Longitude).
+    :param dicc: Earth Engine Geometries or Tiles dictionary
+    :param Tiles: Mapbox Bright,Mapbox Control Room,Stamen Terrain,Stamen Toner,stamenwatercolor,cartodbpositron.
+    :zoom_start: Initial zoom level for the map.
+    :return: A folium.Map object.
+    '''
+    mapViz = folium.Map(location=center,tiles=Tiles, zoom_start=zoom_start)
+    for k,v in dicc.items():
+      if ee.image.Image in [type(x) for x in v.values()]:
+        folium.TileLayer(
+            tiles = EE_TILES.format(**v),
+            attr  = 'Google Earth Engine',
+            overlay =True,
+            name  = k
+          ).add_to(mapViz)
+      else:
+        folium.GeoJson(
+        data = v,
+        name = k
+          ).add_to(mapViz)
+    mapViz.add_child(folium.LayerControl())
+    return mapViz
+```
 
 ### 4.1. Installing
 Before coding do not forget install and load the following packages and remenber that you can communicate with the bash console prepending an ! to the code. 
 
 ```{python, eval=FALSE}
 !pip install -q tf-nightly-2.0-preview #tensorflow 2.0
-!pip install earthengine-api #earthengine API
+!pip install earthengine-api==0.1.175 #earthengine API
 # Load the TensorBoard notebook extension
 %load_ext tensorboard
 ```
 
 ### 4.2. Authentification
-For interacting with Google services, it's necessary to authenticate (as yourself). The code below accomplishes this task.
+This tutorial needs interacting with some Google services. For accomplish this task, it's necessary to authenticate (as yourself). The code below shows you how to do it.
 
 #### Google Cloud
 
 Google Cloud Storage bucket will serve as a bridge between GEE and Colab.
+
 ```{python, eval = FALSE}
 from google.colab import auth
 auth.authenticate_user()
@@ -117,26 +156,20 @@ EE_TILES = 'https://earthengine.googleapis.com/map/{mapid}/{{z}}/{{x}}/{{y}}?tok
 
 ### 4.4. Prepare the Dataset
 
-Firstly, we define our prediction area (Camana Valley) and passing to GEE. For moving a vector to GEE, we can use the `ee.Geometry.*` module. The [GeoJSON](https://geojson.org/) spec describes in detail the type of geometries supported by GEE, including `Point` (a list of coordinates in some projection), `LineString` (a list of points), `LinearRing` (a closed LineString), and `Polygon` (a list of LinearRings where the first is a shell and subsequent rings are holes). GEE also supports **MultiPoint**, **MultiLineString**, and **MultiPolygon**. The [GeoJSON](https://geojson.org/) GeometryCollection is also supported, although it has the name **MultiGeometry** within GEE.
-
+Firstly, we define our prediction area (Camana Valley) and passing to GEE. For moving a vector to GEE, you will use the `ee.Geometry.*` module. The [GeoJSON](https://geojson.org/) spec describes in detail the type of geometries supported by GEE, including `Point` (a list of coordinates in some projection), `LineString` (a list of points), `LinearRing` (a closed LineString), and `Polygon` (a list of LinearRings where the first is a shell and subsequent rings are holes). GEE also supports **MultiPoint**, **MultiLineString**, and **MultiPolygon**. The [GeoJSON](https://geojson.org/) GeometryCollection is also supported, although it has the name **MultiGeometry** within GEE.
 
 ```{python ,eval=FALSE}
 # 4.4.1 Prediction Area
 xmin,ymin,xmax,ymax = [-72.778645, -16.621663, -72.66865, -16.57553]
 
-xmed = (xmax + xmin)/2
-ymed = (ymax + ymax)/2
 
 # Passing a rectangle (prediction area) to Earth Engine
 Camana_valley = ee.Geometry.Rectangle([xmin,ymin,xmax,ymax])
-
-m = folium.Map(
-    location=[ymed, xmed],
-    zoom_start=7    
-)
-folium.Rectangle([[ymax,xmin],[ymin,xmax]],popup='Camana',name='Landsat8-2018',fill=True).add_to(m)
-m
+center = Camana_valley.centroid().getInfo()['coordinates']
+center.reverse()
+Mapdisplay(center,{'Camana Valley':Camana_valley.getInfo()},zoom_start=12)
 ```
+
 
 ```{r eval=TRUE,echo=FALSE,highlight=FALSE,warning=FALSE,message=FALSE}
 xmin =-72.778645
@@ -152,7 +185,7 @@ mapview(camana,popup='Camana Valley')
 ```
 
 
-Next, you create a visualization (with folium!) of the train and test dataset. We've already generated some points with the label agriculture/non-agriculture.
+Next, you will read and create a visualization of the train/test dataset. I've already generated some points with the label agriculture/non-agriculture.
 
 - Train dataset (550 points):
   - 275 labeled as "agriculture"
@@ -164,35 +197,20 @@ Next, you create a visualization (with folium!) of the train and test dataset. W
 
 ```{python, eval=FALSE}
 # 4.4.2 Importing the train/test dataset
-import pandas as pd
-import numpy as np
-
 train_agriculture = ee.FeatureCollection('users/csaybar/DLdemos/train_set') 
 test_agriculture = ee.FeatureCollection('users/csaybar/DLdemos/test_set')
 
-# Passing data of Earth Engine to Python(pandas)
-xy_agr = train_agriculture.geometry().getInfo()['coordinates']
-df_agr = pd.DataFrame(xy_agr,columns=['Longitude','Latitude'])
-df_agr['class'] = 'train'
+# Display the train/test dataset
+db_crop = train_agriculture.merge(test_agriculture)
+center = db_crop.geometry().centroid().getInfo()['coordinates']
+center.reverse()
 
-xy_nonagr = test_agriculture.geometry().getInfo()['coordinates']
-df_nonagr = pd.DataFrame(xy_nonagr,columns=['Longitude','Latitude'])
-df_nonagr['class'] = 'test'
+dicc = {'train': train_agriculture.draw(**{'color': 'FF0000', 'strokeWidth': 5}).getMapId(),
+        'test' : test_agriculture.draw(**{'color': '0000FF', 'strokeWidth': 5}).getMapId(),
+        'CamanaValley':Camana_valley.getInfo()
+       }
 
-#Create a boundary Conditions
-maxmincoord = pd.concat([df_nonagr[['Longitude','Latitude']].agg({'min','max'}),
-                         df_agr[['Longitude','Latitude']].agg({'min','max'})])
-xmax, xmin = maxmincoord['Longitude'].max(), maxmincoord['Longitude'].min()
-ymax, ymin = maxmincoord['Latitude'].max(), maxmincoord['Latitude'].min()
-db_area = ee.Geometry.Rectangle([xmin, ymin, xmax, ymax])
-
-# Passing the dataset to folium!
-df_agr.apply(lambda row: folium.CircleMarker(location=[row['Latitude'], row['Longitude']],
-                                             radius=10, fill_color='blue').add_to(m), axis=1)
-
-df_nonagr.apply(lambda row: folium.CircleMarker(location=[row['Latitude'], row['Longitude']],color='red',
-                                                radius=10, fill_color='red').add_to(m), axis=1)
-m
+Mapdisplay(center,dicc,zoom_start=8)
 ```
 
 
@@ -208,7 +226,8 @@ st_crs(dt) = 4326
 mapview(dt,zcol = "class")
 ```
 
-You will obtain the input data for mapping the **Camana crop area** of  [Landsat 8 OLI/TIRS (L8)](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR). GEE provides L8 images with radiometric and geometry correction. Additionally, **cloud mask information** is provided by means of the bit image `pixel_qa`. The following function allows putting NA to the TOA reflectance values of clouds.
+In this part, you will obtain the input data for mapping the **Camana crop area** using  [Landsat 8 OLI/TIRS (L8)](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR). GEE provides L8 images with radiometric and geometry correction. Additionally, **cloud mask information** is provided by means of the bit image `pixel_qa`. The following function allows putting NA to the TOA reflectance values of clouds.
+
 
 ```{python,eval=FALSE}
 def maskS2clouds(img):
@@ -231,12 +250,12 @@ def maskS2clouds(img):
   # Both flags should be set to zero, indicating clear conditions.
   mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)\
            .And(qa.bitwiseAnd(cloudsBitMask).eq(0))
-  return img.updateMask(mask)
+  return img.updateMask(mask)    
 ```
 
-Now you filtering and reducing the entire Landsat-8 dataset, considering the following:
+Now you will filter and reduce the entire Landsat-8 dataset, considering the following:
 
-1. Select only bands with spatial resolution of **30 meters**.
+1. Select just bands **[R, G, B, NIR]**.
 
 2. Filter considering the cloud pixel percentage by scene (< 20%).
 
@@ -248,8 +267,7 @@ Now you filtering and reducing the entire Landsat-8 dataset, considering the fol
 
 6. Clip the image considering study area.
 
-To apply a function on all the elements of specified `ImageCollection` or `FeatureCollection` you can use `.map()`. The only argument that map() receive is a function which takes one parameter: an `ee.Image`.
-
+**NOTE:** To apply a function on all the elements of specified **`ImageCollection`** or **`FeatureCollection`**, you can use the **`map()`** function. 
 
 ```{python}
 # 4.4.3 Prepare the satellite image (Landsat-8)
@@ -257,7 +275,7 @@ RGB_bands = ['B4','B3','B2'] #RGB
 NDVI_bands = ['B5','B4'] #NIR
 
 l8 = ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")\
-               .filterBounds(db_area)\
+               .filterBounds(db_crop)\
                .filterDate('2018-01-01', '2018-12-31')\
                .filter(ee.Filter.lt('CLOUD_COVER', 20))\
                .map(maskS2clouds)\
@@ -271,6 +289,7 @@ l8 = l8_rgb.addBands(l8_ndvi)
 
 
 ```{python}
+from collections import OrderedDict
 # Create a visualization with folium
 visParams_l8 = {    
   'bands': ['R', 'G', 'B'],
@@ -280,35 +299,29 @@ visParams_l8 = {
 }
 
 l8Mapid = l8.getMapId(visParams_l8)
+dicc['Landsat8'] = l8Mapid
 
-folium.TileLayer(
-  tiles=EE_TILES.format(**l8Mapid),
-  attr='Google Earth Engine',
-  overlay=True,
-  name='Landsat8 2018',
-).add_to(m)
+# Changing the order of the dictionary
+key_order = ['Landsat8','CamanaValley','train','test']
+dicc = OrderedDict((k, dicc[k]) for k in key_order)
 
-
-m.add_child(folium.LayerControl())
-m
+Mapdisplay(center,dicc,zoom_start=8)
 ```
-
 
 For the collocation of the train/test datasets to each L8 grid cell value you will use the `ee.Image.sampleRegions` function. Note that geometries will be snapped to pixel centers (nearest center approximation).
 
+
 ```{python}
-# 2.4.3 Extract pixels values considering train/test dataset
+# 4.4.3 Extract pixels values considering train/test dataset
 train_db = l8.sampleRegions(collection=train_agriculture, properties=['class'], scale=30)
 test_db = l8.sampleRegions(collection=test_agriculture, properties=['class'], scale=30)
-
 ```
 
-
-Unfortunately, you do not can use Tensorflow directly in Earth Engine. To overcome this problem we materialize the train/test dataset in a place where the TensorFlow model has access to them (Cloud Storage bucket). 
+Unfortunately, you cannot use Tensorflow directly in Earth Engine. To overcome this problem, you will save the train/test dataset into a Google **Cloud Storage Bucket (GCS)** (you could use Google Drive instead), since both GEE and GCS and Tensorflow can access to them. More details about how to export data in GEE you can find them in the next [link](10_Export.ipynb) or into the [Official Exporting data guide](https://developers.google.com/earth-engine/exporting).
 
 ```{python}
 # 2.4.4 Save results in Google Cloud Storage
-outputBucket = 'bag_csaybar'
+outputBucket = 'bag_csaybar' # Replace with your Cloud Storage bucket 
 
 # Make sure the bucket exists.
 print('Found Cloud Storage bucket.' if tf.io.gfile.exists('gs://' + outputBucket) 
@@ -339,6 +352,9 @@ testingTask.start()
 You can be monitoring your progress with the code below:
 
 ```{python}
+# Monitor task progress
+# Code Extracted here:
+# https://github.com/google/earthengine-api/blob/master/python/examples/ipynb/TF_demo1_keras.ipynb
 import time 
 while trainingTask.active():
   print('Polling for task (id: {}).'.format(trainingTask.id))
@@ -352,6 +368,9 @@ print('Done!')
 
 ### 4.5. Creating a tf.data.Dataset from a TFRecord file
 
+Read data from the TFRecord file into a tf.data.Dataset. Pre-process the dataset to get it into a suitable format for input to the DNN model. 
+For getting more details about  `tf.data.Dataset`see the next [TFdoc](https://www.tensorflow.org/guide/premade_estimators#create_input_functions).
+
 ```{python}
 # Fullname train/test db
 fileNameSuffix = 'ee_export.tfrecord.gz'
@@ -359,13 +378,12 @@ trainFilePath = 'gs://' + outputBucket + '/' + trainFilePrefix + fileNameSuffix
 testFilePath = 'gs://' + outputBucket + '/' + testFilePrefix + fileNameSuffix
 ```
 
-Passing data from the TFRecord file into a tf.data.Dataset. Preprocess the dataset to get it into a suitable format for input to the keras model. For getting more details about  `tf.data.Dataset` see the next [TFdoc](https://www.tensorflow.org/guide/premade_estimators#create_input_functions).
-
 ```{python}
 def input_fn(fileNames, numEpochs=None, shuffle=True, batchSize=16):
-  # Creates a `TFRecordDataset` 
+  # Read `TFRecordDatasets` 
   dataset = tf.data.TFRecordDataset(fileNames, compression_type='GZIP')
 
+  # Names of the features 
   feature_columns = {
     'R': tf.io.FixedLenFeature([], dtype=tf.float32),  
     'G': tf.io.FixedLenFeature([], dtype=tf.float32),  
@@ -374,11 +392,14 @@ def input_fn(fileNames, numEpochs=None, shuffle=True, batchSize=16):
     'class': tf.io.FixedLenFeature([], dtype=tf.float32)
   }
   
+  # Make a parsing function
   def parse(example_proto):
     parsed_features = tf.io.parse_single_example(example_proto, feature_columns)    
     # Separate the class labels from the training features
     labels = parsed_features.pop('class')
     return parsed_features, tf.cast(labels, tf.int32)
+  
+  # Map the function over the dataset
   dataset = dataset.map(parse, num_parallel_calls=5)
   if shuffle:
     dataset = dataset.shuffle(buffer_size = batchSize * 10)
@@ -396,12 +417,12 @@ test_dba = input_fn(testFilePath, numEpochs=1, batchSize=1, shuffle=False)
 ### 4.6. Create a DNN model with keras
 
 Here you will create a deep neural network model with:
+- 2 layers (10x10 nodes).
+- 1 dropout layer.
+- 1 output layer.
 
-  - 2 layers (10x10 nodes).
-  - 1 dropout layer.
-  - 1 output layer.
+Additionally, Early Stopping, Tensorboard, and best model callback were added. A callback is a set of functions to be applied at given stages of the training procedure. You can found more details [here](https://keras.io/callbacks/).
 
-Additionally, `Early Stopping`, `Tensorboard` and `ModelCheckpoint` callbacks were added. A callback is a set of functions to be applied at given stages of the training procedure. You can found more details [here](https://keras.io/callbacks/).
 
 ```{python}
 from tensorflow import keras
@@ -411,13 +432,14 @@ from tensorflow import feature_column
 import os
 import datetime
 
+
 bands = ['R','G','B','NDVI']
 
-# Create a dense `Tensor` based on given `feature_columns`
+# Create a dense `Tensor` based on given `feature_columns`.
 feature_columns = [feature_column.numeric_column(x) for x in bands]
 feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
 
-#initialize dnn model
+# Initialize the DNN model
 he_init = tf.keras.initializers.he_uniform(seed=None)
 
 # Define the layers in the model.
@@ -429,7 +451,7 @@ model = tf.keras.Sequential([
   layers.Dense(1, activation='sigmoid',kernel_initializer=he_init)
 ])
 
-#Callbacks
+# Callbacks time
 logdir = os.path.join("logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 tensorboard_callback = tf.keras.callbacks.TensorBoard(logdir, histogram_freq=1)
 es = EarlyStopping(monitor='val_loss', patience=10)
@@ -464,7 +486,7 @@ model.evaluate(x = test_dba)
 
 ### 4.7. Prediction
 
-Similar to the train/test dataset you will prepare and export the Camana L8 image (prediction area).
+You will prepare the L8 imagery, likewise, you made it for the train/test dataset. 
 
 ```{python}
 l8 = ee.ImageCollection("LANDSAT/LC08/C01/T1_SR")\
@@ -481,13 +503,21 @@ l8_rgb = l8.select(RGB_bands).rename(['R','G','B'])
 l8 = l8_rgb.addBands(l8_ndvi)
 ```
 
+For export the results to the Google Cloud Storage, it's preferred defines the following `formatOptions` parameters to save memory:
+
+- **patchDimensions**:	Patch dimensions tiled over the export area, covering every pixel in the bounding box exactly once (except when the patch dimensions do not evenly divide the bounding box in which case the lower and right sides are trimmed).
+
+- **compressed**: If true, compresses the .tfrecord files with gzip and appends the ".gz" suffix	
+
+See all the paramerters [here](https://developers.google.com/earth-engine/exporting#configuration-parameters).
+
 ```{python}
-imageFilePrefix = 'Camana_DNN'
+imageFilePrefix = 'CamanaValleyCrop'
 
 # Specify patch and file dimensions.
 imageExportFormatOptions = {
-  'patchDimensions': [128, 128],
-  'maxFileSize': 104857600,
+  'patchDimensions': [128, 128],  
+  'maxFileSize': 100000000,    
   'compressed': True
 }
 
@@ -506,6 +536,7 @@ imageTask = ee.batch.Export.image.toCloudStorage(
 imageTask.start()
 ```
 
+
 ```{python}
 import time 
 while imageTask.active():
@@ -513,8 +544,7 @@ while imageTask.active():
   time.sleep(5)
 ```
 
-Now it's time to classify the image that was previously exported from Earth Engine. If the exported image is large, it will be split into multiple TFRecord files in its destination folder. There will also be a JSON sidecar file called "the mixer" that describes the format and georeferencing of the image. Here we will find the image files and the mixer file, getting some info out of the mixer that will be useful during model inference.
-
+Now it's time to classify the image that was exported from GEE to GCS using Tensorflow. If the exported image is large (it not your case), it will be split into multiple TFRecord files in its destination folder. There will also be a JSON sidecar file called **"the mixer"** that describes the format and georeferencing of the image. Here we will find the image files and the mixer file, getting some info out of the mixer that will be useful during model inference.
 
 ```{python}
 filesList = !gsutil ls 'gs://'{outputBucket}
@@ -533,13 +563,11 @@ for f in exportFilesList:
 print(jsonFile)
 ```
 
-
 The mixer contains metadata and georeferencing information for the exported patches, each of which is in a different file. Read the mixer to get some information needed for prediction.
-
 
 ```{python}
 import json
-from pprint import pprint
+from pprint import pprint 
 
 # Load the contents of the mixer file to a JSON object.
 jsonText = !gsutil cat {jsonFile}
@@ -548,58 +576,56 @@ mixer = json.loads(jsonText.nlstr)
 pprint(mixer)
 ```
 
-You can feed the list of files (imageFilesList) directly to the TFRecordDataset constructor to make a combined dataset on which to perform inference. The input needs to be preprocessed differently than the training and testing. Mainly, this is because the pixels are written into records as patches, we need to read the patches in as one big tensor (one patch for each band), then flatten them into lots of little tensors.
+The next function  is slightly different from the to the `input_fn` (see Section 4.5). Mainly, this is because the pixels are written into records as patches, we need to read the patches in as one big tensor (one patch for each band), then flatten them into lots of little tensors.  Once the `predict_input_fn` is defined, that can handle the shape of the image data, all you need to do is feed it directly to the trained model to make predictions.
+
 
 ```{python}
-# Define the patchDimension
-PATCH_WIDTH = 128
-PATCH_HEIGHT = 128
-PATCH_DIMENSIONS_FLAT = [PATCH_WIDTH * PATCH_HEIGHT, 1]
+def predict_input_fn(fileNames,patch,bands):
 
-# Note that the tensors are in the shape of a patch, one patch for each band.
-imageColumns = [
-  tf.io.FixedLenFeature(shape=PATCH_DIMENSIONS_FLAT, dtype=tf.float32) 
-    for k in bands
-]
-    
-featuresDict = dict(zip(bands, imageColumns))
+  # You have to know the following from your export.
+  PATCH_WIDTH, PATCH_HEIGHT = patch
+  PATCH_DIMENSIONS_FLAT = [PATCH_WIDTH * PATCH_HEIGHT, 1]
 
-def predict_input_fn(fileNames):
-  
+  # Note that the tensors are in the shape of a patch, one patch for each band.
+  imageColumns = [
+    tf.io.FixedLenFeature(shape=PATCH_DIMENSIONS_FLAT, dtype=tf.float32) 
+      for k in bands
+  ]
+
+  featuresDict = dict(zip(bands, imageColumns))
   dataset = tf.data.TFRecordDataset(fileNames, compression_type='GZIP')
- 
+  
+  # Make a parsing function
   def parse_image(example_proto):
     parsed_features = tf.io.parse_single_example(example_proto, featuresDict)
     return parsed_features
-  
-  dataset = dataset.map(parse_image, num_parallel_calls=4)
 
-  # Romper nuestros tensores largos en muchos pequeños. 
+  dataset = dataset.map(parse_image, num_parallel_calls=4)
+  
+  # Break our long tensors into many littler ones
   #https://stackoverflow.com/questions/50530806/using-flat-map-in-tensorflows-dataset-api
   dataset = dataset.flat_map(lambda features: tf.data.Dataset.from_tensor_slices(features))
-  
-  
+
   # Read in batches corresponding to patch size.
   dataset = dataset.batch(PATCH_WIDTH * PATCH_HEIGHT)
-  
+
   return dataset
-
-dsad = predict_input_fn(fileNames=imageFilesList)
-
-predictions = model.predict(predict_input_fn(fileNames=imageFilesList))
 ```
 
-Now that there's a list of class probabilities in predictions, it's time to write them back into a file, optionally including a class label which is simply the index of the maximum probability. We'll write directly from TensorFlow to a file in the output Cloud Storage bucket.
-
-Iterate over the list, compute class label and write the class and the probabilities in patches. Specifically, we need to write the pixels into the file as patches in the same order they came out. The records are written as serialized tf.train.Example protos. This might take a while.
 
 ```{python}
-outputImageFile = 'gs://' + outputBucket + '/Arequipa.TFRecord'
-print('Writing to file ' + outputImageFile)
+predict_db = predict_input_fn(fileNames=imageFilesList,patch=[64,64],bands=['R', 'G', 'B', 'NDVI'])
+predictions = model.predict(predict_db)
 ```
-  
+
+Now that there's a `np.array` of probabilities in "predictions", it's time to write them back into a file. You will write directly from TensorFlow to a file in the output Cloud Storage bucket.
+
+Iterate over the list and write the probabilities in patches. Specifically, we need to write the pixels into the file as patches in the same order they came out. The records are written as serialized tf.train.Example protos. This might take a while.
+
 ```{python}
 # Instantiate the writer.
+PATCH_WIDTH , PATCH_HEIGHT = [64,64]
+outputImageFile = 'gs://' + outputBucket + '/CamanaValleyCrop.TFRecord'
 writer = tf.io.TFRecordWriter(outputImageFile)
 
 # Every patch-worth of predictions we'll dump an example into the output
@@ -612,19 +638,18 @@ for  prediction in predictions:
   patch.append(prediction)
   
   if (len(patch) == PATCH_WIDTH * PATCH_HEIGHT):
-    print('Done with patch ' + str(curPatch) + '...')
+    print('Done with patch ' + str(curPatch) + '...')    
     # Create an example
     example = tf.train.Example(
       features=tf.train.Features(
         feature={
-          'Agriculture_prob': tf.train.Feature(
+          'crop_prob': tf.train.Feature(
               float_list=tf.train.FloatList(
                   value=patch))
         }
       )
     )
-    # Escriba el ejemplo en el archivo y borre nuestra matriz de parches para que esté listo para
-    # otro lote de ID de clase.
+    
     writer.write(example.SerializeToString())
     patch = []
     curPatch += 1 
@@ -640,12 +665,12 @@ At this stage, there should be a predictions TFRecord file sitting in the output
 !gsutil ls -l {outputImageFile}
 ```
 
-Upload the image to Earth Engine directly from the Cloud Storage bucket with the earthengine command. Provide both the image TFRecord file and the JSON file as arguments to earthengine upload.
+Upload the image to Earth Engine directly from the Cloud Storage bucket with the [earthengine command](https://developers.google.com/earth-engine/command_line#upload). Provide both the image TFRecord file and the JSON file as arguments to earthengine upload.
 
 ```{python}
 # REPLACE WITH YOUR USERNAME:
 USER_NAME = 'csaybar'
-outputAssetID = 'users/' + USER_NAME + '/Camana_demo'
+outputAssetID = 'users/' + USER_NAME + '/CamanaCrop'
 print('Writing to ' + outputAssetID)
 ```
 
@@ -654,29 +679,20 @@ print('Writing to ' + outputAssetID)
 !earthengine upload image --asset_id={outputAssetID} {outputImageFile} {jsonFile}
 ```
 
-Display the vector of class probabilities as an RGB image with colors corresponding to the probability of bare, vegetation, water in a pixel. Also display the winning class using the same color palette.
+Display the Results using Folium!
 
 ```{python}
-predictionsImage = ee.Image(outputAssetID).gte(0.505)
+ProbsImage = ee.Image(outputAssetID)
+predictionsImage = ee.Image(outputAssetID).gte(0.500)
+dicc = {'CropProbability':ProbsImage.getMapId(),
+        'Crop':predictionsImage.getMapId()}
 
-probabilityVis = {'bands': ['Agriculture_prob'],
-                   'min': 0,
-                   'max': 1
-                 }
+center = Camana_valley.centroid().getInfo()['coordinates']
+center.reverse()
 
-probabilityMapid = predictionsImage.getMapId(probabilityVis)
-
-map = folium.Map(location=[-16.7,-72.5],max_zoom=8,prefer_canvas=True)
-folium.TileLayer(
-  tiles=EE_TILES.format(**probabilityMapid),
-  attr='Google Earth Engine',
-  overlay=True,
-  name='probability',
-).add_to(map)
-map.add_child(folium.LayerControl())
-map
+Mapdisplay(center=center,dicc=dicc,zoom_start=13)
 ```
 
-
+### That's all for this time!, the next post is about semantic segmentation and Earth Engine.
 
 
