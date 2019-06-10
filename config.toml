@@ -72,3 +72,10 @@ parent = "Presentations"
 name = "Peru-floods"
 url = "https://csaybar.github.io/slides/flood/flood_senamhi.html"
 weight = 3
+
+
+[[menu.main]]
+parent = "Presentations" 
+name = "Reproducible Research - Peru"
+url = "https://csaybar.github.io/slides/RR/RR.html"
+weight = 3
