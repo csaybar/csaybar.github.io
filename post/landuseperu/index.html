@@ -63,7 +63,7 @@
   "headline": "Download the GLC30 product for Peru and Ecuador",
   "description" : "Land Cover information is fundamental for environmental change studies, land resource management, sustainable development, and many other societal benefits. In Google Earth Engine existing different coarse Land use\/cover products (e.g. MCD12Q1-500m) that are not able to capture the most significant human impacts on land systems due to its spatial resolution. Therefore, this short post aims to introduce and explain step by step how to download the GLC30 a relative new Global Land Cover product at 30-meter spatial resolution.",
   "inLanguage" : "en",
-  "wordCount":  498 ,
+  "wordCount":  541 ,
   "datePublished" : "2019-06-08T00:00:00",
   "dateModified" : "2019-06-08T00:00:00",
   "image" : "\/img\/oldpython.png",
@@ -287,7 +287,7 @@ if (!doNotTrack) {
     &nbsp;|&nbsp;<i class="fas fa-clock"></i>&nbsp;3&nbsp;minutes
   
   
-    &nbsp;|&nbsp;<i class="fas fa-book"></i>&nbsp;498&nbsp;words
+    &nbsp;|&nbsp;<i class="fas fa-book"></i>&nbsp;541&nbsp;words
   
   
     &nbsp;|&nbsp;<i class="fas fa-user"></i>&nbsp;Cesar Aybar
@@ -397,12 +397,11 @@ lima_coords = eval(lima)[&#39;features&#39;][0][&#39;geometry&#39;][&#39;coordin
 # ee.Geometry -&gt; ee.Feature -&gt; ee.FeatureCollection
 eeLima = ee.FeatureCollection([ee.Feature(ee.Geometry.Polygon(lima_coords),{&#39;Name&#39;:&#39;Lima&#39;})])</code></pre>
 <pre class="python"><code># display the geometry using folium
-center = eeLima.geometry().centroid().getInfo()[&#39;coordinates&#39;]
-center.reverse()
+center_lima = eeLima.geometry().centroid().getInfo()[&#39;coordinates&#39;]
+center_lima.reverse()
 
-fig =eePeru.draw(**{&#39;color&#39;: &#39;FF0000&#39;, &#39;strokeWidth&#39;: 5}).getMapId()
-
-Mapdisplay(center,{&#39;Lima&#39;:fig})</code></pre>
+fig =eeLima.draw(**{&#39;color&#39;: &#39;FF0000&#39;, &#39;strokeWidth&#39;: 5}).getMapId()
+Mapdisplay(center_lima,{&#39;Lima&#39;:fig})</code></pre>
 <center>
 <img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/vector.png'>
 </center>
@@ -414,10 +413,6 @@ def removevalues(img):
   value_0 = img.neq(0)
   value_255 = img.neq(255)
   return img.updateMask(value_0).updateMask(value_255).divide(10).int()
-
-# Load the dataset
-glc30 = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
-          .map(removevalues).max().clip(eeLima)
 
 # Define a palette for the distinct land cover classes.
 glc30Palette = [
@@ -432,10 +427,27 @@ glc30Palette = [
   &#39;cacaca&#39;, # 9-Bareland    
   &#39;f9f3c1&#39;, # 10-Permanent snow and ice  
 ]
-vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}
-Mapdisplay(center,{&#39;glc30&#39;:glc30.getMapId(vizparams)},zoom_start=10)</code></pre>
+
+# Load the dataset
+glc30_lima = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
+               .map(removevalues).max().clip(eeLima)
+
+vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}</code></pre>
 <center>
 <img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse.png'>
+</center>
+<pre class="python"><code># Ecuador 
+Ecuador = ee.Geometry.Polygon([[-79.25,0.10],[-79.25,0.47],[-79.76,0.47],[-79.76,0.10], [-79.25,0.10]])
+center_ecu = Ecuador.centroid().getInfo()[&#39;coordinates&#39;]
+center_ecu.reverse()
+# Load the dataset
+glc30_ecuador = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
+               .map(removevalues).max().clip(Ecuador)
+
+vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}
+Mapdisplay(center_ecu,{&#39;glc30&#39;:glc30_ecuador.getMapId(vizparams)},zoom_start=10)</code></pre>
+<center>
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse_01_ecuador.jpg'>
 </center>
 </div>
 <div id="export-the-results-of-ee-to-google-drive" class="section level2">
@@ -454,6 +466,15 @@ task.start()</code></pre>
 while task.active():
   print(&#39;Polling for task (id: {}).&#39;.format(task.id))
   time.sleep(5)</code></pre>
+<pre class="python"><code># Export the image, specifying scale and region.
+task = ee.batch.Export.image.toDrive(**{
+    &#39;image&#39;: glc30,
+    &#39;description&#39;: &#39;GLC30ECUADOR&#39;,
+    &#39;folder&#39;:&#39;GLC30&#39;,
+    &#39;scale&#39;: 30,
+    &#39;region&#39;: Ecuador.getInfo()[&#39;coordinates&#39;]
+})
+task.start()</code></pre>
 </div>
 
 
@@ -545,6 +566,10 @@ while task.active():
               <a href="../../post/eetf/" data-toggle="tooltip" data-placement="top" title="Integrating Earth Engine with Tensorflow I - DNN">&larr; Previous Post</a>
             </li>
           
+          
+            <li class="next">
+              <a href="../../post/eetfii/" data-toggle="tooltip" data-placement="top" title="Integrating Earth Engine with Tensorflow II - U-Net">Next Post &rarr;</a>
+            </li>
           
         </ul>
       

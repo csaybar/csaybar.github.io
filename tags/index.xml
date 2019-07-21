@@ -7,10 +7,46 @@
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
-    <lastBuildDate>Sat, 08 Jun 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 21 Jun 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>GEE</title>
+      <link>/tags/gee/</link>
+      <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/gee/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Python</title>
+      <link>/tags/python/</link>
+      <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>keras</title>
+      <link>/tags/keras/</link>
+      <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/keras/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tensorflow</title>
+      <link>/tags/tensorflow/</link>
+      <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
+      <author>csaybar@gmail.com (Cesar Aybar)</author>
+      <guid>/tags/tensorflow/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Google Earth Engine</title>
@@ -27,15 +63,6 @@
       <pubDate>Sat, 08 Jun 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
       <guid>/tags/folium/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>python</title>
-      <link>/tags/python/</link>
-      <pubDate>Sat, 08 Jun 2019 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/tags/python/</guid>
       <description></description>
     </item>
     

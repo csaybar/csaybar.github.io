@@ -121,12 +121,11 @@ eeLima = ee.FeatureCollection([ee.Feature(ee.Geometry.Polygon(lima_coords),{'Nam
 
 ```{python}
 # display the geometry using folium
-center = eeLima.geometry().centroid().getInfo()['coordinates']
-center.reverse()
+center_lima = eeLima.geometry().centroid().getInfo()['coordinates']
+center_lima.reverse()
 
-fig =eePeru.draw(**{'color': 'FF0000', 'strokeWidth': 5}).getMapId()
-
-Mapdisplay(center,{'Lima':fig})
+fig =eeLima.draw(**{'color': 'FF0000', 'strokeWidth': 5}).getMapId()
+Mapdisplay(center_lima,{'Lima':fig})
 ```
 
 <center>
@@ -142,10 +141,6 @@ def removevalues(img):
   value_255 = img.neq(255)
   return img.updateMask(value_0).updateMask(value_255).divide(10).int()
 
-# Load the dataset
-glc30 = ee.ImageCollection('users/csaybar/GLC30PERU')\
-          .map(removevalues).max().clip(eeLima)
-
 # Define a palette for the distinct land cover classes.
 glc30Palette = [
   'ff02d0', # 1-Cultaved Lands
@@ -159,12 +154,33 @@ glc30Palette = [
   'cacaca', # 9-Bareland    
   'f9f3c1', # 10-Permanent snow and ice  
 ]
+
+# Load the dataset
+glc30_lima = ee.ImageCollection('users/csaybar/GLC30PERU')\
+               .map(removevalues).max().clip(eeLima)
+
 vizparams = {'min':1,'max':10,'palette':glc30Palette}
-Mapdisplay(center,{'glc30':glc30.getMapId(vizparams)},zoom_start=10)
 ```
 
 <center>
 <img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse.png'>
+</center>
+
+```{python}
+# Ecuador 
+Ecuador = ee.Geometry.Polygon([[-79.25,0.10],[-79.25,0.47],[-79.76,0.47],[-79.76,0.10], [-79.25,0.10]])
+center_ecu = Ecuador.centroid().getInfo()['coordinates']
+center_ecu.reverse()
+# Load the dataset
+glc30_ecuador = ee.ImageCollection('users/csaybar/GLC30PERU')\
+               .map(removevalues).max().clip(Ecuador)
+
+vizparams = {'min':1,'max':10,'palette':glc30Palette}
+Mapdisplay(center_ecu,{'glc30':glc30_ecuador.getMapId(vizparams)},zoom_start=10)
+```
+
+<center>
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse_01_ecuador.jpg'>
 </center>
 
 ## 7. Export the results of EE to Google Drive
@@ -188,4 +204,17 @@ import time
 while task.active():
   print('Polling for task (id: {}).'.format(task.id))
   time.sleep(5)
+```
+
+
+```{python}
+# Export the image, specifying scale and region.
+task = ee.batch.Export.image.toDrive(**{
+    'image': glc30,
+    'description': 'GLC30ECUADOR',
+    'folder':'GLC30',
+    'scale': 30,
+    'region': Ecuador.getInfo()['coordinates']
+})
+task.start()
 ```

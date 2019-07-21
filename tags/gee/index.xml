@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>keras on Algorithms &amp; Maps</title>
-    <link>/tags/keras/</link>
-    <description>Recent content in keras on Algorithms &amp; Maps</description>
+    <title>GEE on Algorithms &amp; Maps</title>
+    <link>/tags/gee/</link>
+    <description>Recent content in GEE on Algorithms &amp; Maps</description>
     <generator>Hugo -- gohugo.io</generator>
     <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
     <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
     <lastBuildDate>Fri, 21 Jun 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/keras/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/gee/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>

@@ -95,12 +95,11 @@ lima_coords = eval(lima)[&#39;features&#39;][0][&#39;geometry&#39;][&#39;coordin
 # ee.Geometry -&gt; ee.Feature -&gt; ee.FeatureCollection
 eeLima = ee.FeatureCollection([ee.Feature(ee.Geometry.Polygon(lima_coords),{&#39;Name&#39;:&#39;Lima&#39;})])</code></pre>
 <pre class="python"><code># display the geometry using folium
-center = eeLima.geometry().centroid().getInfo()[&#39;coordinates&#39;]
-center.reverse()
+center_lima = eeLima.geometry().centroid().getInfo()[&#39;coordinates&#39;]
+center_lima.reverse()
 
-fig =eePeru.draw(**{&#39;color&#39;: &#39;FF0000&#39;, &#39;strokeWidth&#39;: 5}).getMapId()
-
-Mapdisplay(center,{&#39;Lima&#39;:fig})</code></pre>
+fig =eeLima.draw(**{&#39;color&#39;: &#39;FF0000&#39;, &#39;strokeWidth&#39;: 5}).getMapId()
+Mapdisplay(center_lima,{&#39;Lima&#39;:fig})</code></pre>
 <center>
 <img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/vector.png'>
 </center>
@@ -112,10 +111,6 @@ def removevalues(img):
   value_0 = img.neq(0)
   value_255 = img.neq(255)
   return img.updateMask(value_0).updateMask(value_255).divide(10).int()
-
-# Load the dataset
-glc30 = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
-          .map(removevalues).max().clip(eeLima)
 
 # Define a palette for the distinct land cover classes.
 glc30Palette = [
@@ -130,10 +125,27 @@ glc30Palette = [
   &#39;cacaca&#39;, # 9-Bareland    
   &#39;f9f3c1&#39;, # 10-Permanent snow and ice  
 ]
-vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}
-Mapdisplay(center,{&#39;glc30&#39;:glc30.getMapId(vizparams)},zoom_start=10)</code></pre>
+
+# Load the dataset
+glc30_lima = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
+               .map(removevalues).max().clip(eeLima)
+
+vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}</code></pre>
 <center>
 <img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse.png'>
+</center>
+<pre class="python"><code># Ecuador 
+Ecuador = ee.Geometry.Polygon([[-79.25,0.10],[-79.25,0.47],[-79.76,0.47],[-79.76,0.10], [-79.25,0.10]])
+center_ecu = Ecuador.centroid().getInfo()[&#39;coordinates&#39;]
+center_ecu.reverse()
+# Load the dataset
+glc30_ecuador = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
+               .map(removevalues).max().clip(Ecuador)
+
+vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}
+Mapdisplay(center_ecu,{&#39;glc30&#39;:glc30_ecuador.getMapId(vizparams)},zoom_start=10)</code></pre>
+<center>
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse_01_ecuador.jpg'>
 </center>
 </div>
 <div id="export-the-results-of-ee-to-google-drive" class="section level2">
@@ -152,4 +164,13 @@ task.start()</code></pre>
 while task.active():
   print(&#39;Polling for task (id: {}).&#39;.format(task.id))
   time.sleep(5)</code></pre>
+<pre class="python"><code># Export the image, specifying scale and region.
+task = ee.batch.Export.image.toDrive(**{
+    &#39;image&#39;: glc30,
+    &#39;description&#39;: &#39;GLC30ECUADOR&#39;,
+    &#39;folder&#39;:&#39;GLC30&#39;,
+    &#39;scale&#39;: 30,
+    &#39;region&#39;: Ecuador.getInfo()[&#39;coordinates&#39;]
+})
+task.start()</code></pre>
 </div>
