@@ -14,10 +14,10 @@
     
     <item>
       <title>Integrating Earth Engine with Tensorflow II - U-Net</title>
-      <link>/post/eetfii/</link>
+      <link>/post/eetf2/</link>
       <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
       <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/post/eetfii/</guid>
+      <guid>/post/eetf2/</guid>
       <description>This notebook has been inspired by the Chris Brown &amp;amp; Nick Clinton EarthEngine + Tensorflow presentation. It shows the step by step how to integrate Google Earth Engine and TensorFlow 2.0 in the same pipeline (EE-&amp;gt;Tensorflow-&amp;gt;EE).
   OBS: I will assume reader are already familiar with the basic concepts of Machine Learning and Convolutional Networks. If it is doesn’t, I firstly highly recommend taking the deep learning coursera specialization available here.</description>
     </item>
