@@ -163,6 +163,11 @@
   </url>
   
   <url>
+    <loc>/page/signin/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/page/about/</loc>
   </url>
   
