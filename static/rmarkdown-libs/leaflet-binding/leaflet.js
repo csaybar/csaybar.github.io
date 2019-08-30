@@ -1287,10 +1287,18 @@ function mouseHandler(mapId, layerId, group, eventName, extraInfo) {
   return function (e) {
     if (!_htmlwidgets2.default.shinyMode) return;
 
+    var latLng = e.target.getLatLng ? e.target.getLatLng() : e.latlng;
+    if (latLng) {
+      // retrieve only lat, lon values to remove prototype
+      //   and extra parameters added by 3rd party modules
+      // these objects are for json serialization, not javascript
+      var latLngVal = _leaflet2.default.latLng(latLng); // make sure it has consistent shape
+      latLng = { lat: latLngVal.lat, lng: latLngVal.lng };
+    }
     var eventInfo = _jquery2.default.extend({
       id: layerId,
       ".nonce": Math.random() // force reactivity
-    }, group !== null ? { group: group } : null, e.target.getLatLng ? e.target.getLatLng() : e.latlng, extraInfo);
+    }, group !== null ? { group: group } : null, latLng, extraInfo);
 
     _shiny2.default.onInputChange(mapId + "_" + eventName, eventInfo);
   };
@@ -1771,7 +1779,7 @@ methods.addGeoJSON = function (data, layerId, group, style) {
         featureId: feature.id,
         properties: feature.properties
       };
-      var popup = feature.properties.popup;
+      var popup = feature.properties ? feature.properties.popup : null;
       if (typeof popup !== "undefined" && popup !== null) layer.bindPopup(popup);
       layer.on("click", mouseHandler(self.id, layerId, group, "geojson_click", extraInfo), this);
       layer.on("mouseover", mouseHandler(self.id, layerId, group, "geojson_mouseover", extraInfo), this);
