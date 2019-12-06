@@ -1,0 +1,1356 @@
+---
+title: "Head Start Data Science I: Titanic Challenge"
+subtitle: "TOP 3% Solution 0.823 -- NO CHEATING!"
+author: "Cesar Aybar"
+date: '2019-05-19'
+banner: "img/banners/02_banner_titanic.jpg"
+tags: ["Python", "shap", "featuretools", "lightgbm","sklearn"]
+---
+
+
+
+<div id="introduction" class="section level2">
+<h2>1. Introduction</h2>
+<p>The <a href="https://www.kaggle.com/c/titanic/overview/evaluation">Titanic challenge</a> is an excellent way to practice the necessary skills required for ML. In my first attempts, I blindly applied a well-known ML method (<strong>Lightgbm</strong>); however, I couldn’t go up over the Top 20% :(. To have success in this competition you need to realize an <strong>acute feature engineering</strong> that takes into account the distribution on train and test dataset. This post is the perfect opportunity to share with you my Python package <a href="https://www.github.com/csaybar/preml">preml</a> and show how can you <strong>BEAT THE 97% OF LB</strong>.</p>
+<p>Frankly, This is not a 100% ORIGINAL work, I get a lot of inspiration of different kernel:</p>
+<ul>
+<li><a href="https://www.kaggle.com/cdeotte/titanic-wcg-xgboost-0-84688">1. Titanic WCG+XGBoost</a></li>
+<li><a href="https://www.kaggle.com/liananapalkova/automated-feature-engineering-for-titanic-dataset">2. Automated feature engineering for Titanic dataset</a></li>
+<li><a href="https://www.kaggle.com/mrisdal/exploring-survival-on-the-titanic">3. Exploring Survival on the Titanic</a></li>
+<li><a href="https://www.kaggle.com/fanvacoolt/tutorial-on-hyperopt">4. Tutorial on hyperopt</a></li>
+<li><a href="https://www.kaggle.com/rquintino/minimal-pipeline-lightgbm-shapley">5. minimal pipeline | lightgbm | + shapley</a></li>
+<li><a href="https://towardsdatascience.com/my-secret-sauce-to-be-in-top-2-of-a-kaggle-competition-57cff0677d3c">6. My secret sauce to be in top 2% of a kaggle competition</a></li>
+</ul>
+<p>So, if you find this post helpful some <strong>UPVOTES</strong> to the previous ones would be very much appreciated.</p>
+<center>
+<img src=https://cdn-images-1.medium.com/max/1600/1*2T5rbjOBGVFdSvtlhCqlNg.png >
+<figcaption>
+Cross Industry Standard Process for Data Mining (CRISP-DM)
+</figcaption>
+</center>
+</div>
+<div id="competition-description" class="section level2">
+<h2>2. Competition Description</h2>
+<p>The sinking of the RMS Titanic is one of the most infamous shipwrecks in history. On April 15, 1912, during her maiden voyage, the Titanic sank after colliding with an iceberg, killing 1502 out of 2224 passengers and crew. This sensational tragedy shocked the international community and led to better safety regulations for ships.
+One of the reasons that the shipwreck led to such loss of life was that there were not enough lifeboats for the passengers and crew. Although there was some element of luck involved in surviving the sinking, some groups of people were more likely to survive than others, such as women, children, and the upper-class.
+In this challenge, we ask you to complete the analysis of what sorts of people were likely to survive. In particular, we ask you to apply the tools of machine learning to predict which passengers survived the tragedy.</p>
+</div>
+<div id="goal" class="section level2">
+<h2>3. Goal</h2>
+<p>Predict if a <strong>PASSENGER SURVIVED</strong> the sinking of the Titanic or not. For each in the test set, you must predict a 0 or 1 value for the variable.</p>
+<p>The data has been split into two groups:</p>
+<ul>
+<li>training set (train.csv)</li>
+<li>test set (test.csv)</li>
+</ul>
+<p>The training set should be used to build your machine learning models. For the training set, we provide the outcome (also known as the “ground truth”) for each passenger. Your model will be based on “features” like passengers’ gender and class. You can also use feature engineering to create new features.</p>
+<p>The test set should be used to see how well your model performs on unseen data. For the test set, we do not provide the ground truth for each passenger. It is your job to predict these outcomes. For each passenger in the test set, use the model you trained to predict whether or not they survived the sinking of the Titanic.</p>
+<center>
+<table>
+<thead>
+<tr class="header">
+<th>Variable Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Survived</td>
+<td>Survived (1) or died (0)</td>
+</tr>
+<tr class="even">
+<td>Pclass</td>
+<td>Passenger’s class</td>
+</tr>
+<tr class="odd">
+<td>Name</td>
+<td>Passenger’s name</td>
+</tr>
+<tr class="even">
+<td>Sex</td>
+<td>Passenger’s sex</td>
+</tr>
+<tr class="odd">
+<td>Age</td>
+<td>Passenger’s age</td>
+</tr>
+<tr class="even">
+<td>SibSp</td>
+<td>Number of siblings/spouses aboard</td>
+</tr>
+<tr class="odd">
+<td>Parch</td>
+<td>Number of parents/children aboard</td>
+</tr>
+<tr class="even">
+<td>Ticket</td>
+<td>Ticket number</td>
+</tr>
+<tr class="odd">
+<td>Fare</td>
+<td>Fare</td>
+</tr>
+<tr class="even">
+<td>Cabin</td>
+<td>Cabin</td>
+</tr>
+<tr class="odd">
+<td>Embarked</td>
+<td>Port of embarkation</td>
+</tr>
+</tbody>
+</table>
+</center>
+</div>
+<div id="metric" class="section level2">
+<h2>4. Metric</h2>
+<p>Your score is the percentage of passengers you correctly predict. This is known simply as <a href="https://en.wikipedia.org/wiki/Accuracy_and_precision#In_binary_classification"><strong>accuracy</strong></a>.</p>
+</div>
+<div id="specific-concepts-that-will-be-covered" class="section level2">
+<h2>5. Specific concepts that will be covered:</h2>
+<p>In the process, we will build practical experience and develop intuition around the following Python packages:</p>
+<ul>
+<li><strong><a href="https://www.featuretools.com/">Feature Tools</a></strong> - Feature engineering is fundamental to the application of <strong>machine learning</strong>, and is both difficult and expensive. Featuretools is an open source python framework for automated feature engineering. For a comprehensive first step check out their <a href="https://docs.featuretools.com/">webpage</a>, for understand the math behind the magic check out this <a href="http://www.jmaxkanter.com/static/papers/DSAA_DSM_2015.pdf">paper!</a>.</li>
+</ul>
+<center>
+<img src = "https://camo.githubusercontent.com/cfcfc32dae79f7857d760a358227665a054b5583/68747470733a2f2f7777772e66656174757265746f6f6c732e636f6d2f77702d636f6e74656e742f75706c6f6164732f323031372f31322f466561747572654c6162732d4c6f676f2d54616e676572696e652d3830302e706e67" height = 100>
+</center>
+<ul>
+<li><strong><a href="https://github.com/slundberg/shap">SHAP (SHapley Additive exPlanations)</a></strong> - Model explainability is a priority in today’s data science community. <strong>Shap</strong> is a Python packages that connects game theory with local explanations to elucidate the output of any machine learning model.</li>
+</ul>
+<center>
+<img src = "https://raw.githubusercontent.com/slundberg/shap/master/docs/artwork/shap_diagram.png" height = 150>
+</center>
+<ul>
+<li><strong><a href="https://github.com/microsoft/LightGBM">LightGBM</a></strong> - A fast, distributed, high performance gradient boosting (GBDT, GBRT, GBM or MART) framework based on decision tree algorithms, used for ranking, classification and many other machine learning tasks. It is under the umbrella of the <a href="http://github.com/microsoft/dmtk">DMTK</a> project of Microsoft.</li>
+</ul>
+<center>
+<img src = "https://cdn-images-1.medium.com/max/800/1*mKkwlQF25Rq1ilne5UiEXA.png" height = 180>
+</center>
+<ul>
+<li><strong><a href="https://github.com/hyperopt/hyperopt">Hyperopt</a></strong> - Hyperopt is a Python library for serial and parallel optimization over awkward search spaces, which may include real-valued, discrete, and conditional dimensions. In this post, we will use <strong>Hyperopt</strong> to search the hyperparameters of <strong>LightGBM</strong> that better fit to the feature “Survived” (<strong>Target</strong>).</li>
+</ul>
+<center>
+<img src="https://cdn-images-1.medium.com/max/800/1*1HhgVrhk7ABeEaLsTLbWHA.gif" height = 400>
+</center>
+<ul>
+<li><strong><a href="https://github.com/csaybar/preml">preml</a></strong> – This is my Machine Learning toolkit. Here I’m putting my functions and the most useful auxiliary functions that I find when taking a walk for Kaggle. Clean documentation and reproducible examples are the most important in the construction of preml.</li>
+</ul>
+</div>
+<div id="workflow-stages" class="section level2">
+<h2>6. Workflow Stages</h2>
+<p>This script follows eight main parts:</p>
+<ul>
+<li><ol start="0" style="list-style-type: decimal">
+<li>Install, Load and check data</li>
+</ol></li>
+<li><ol style="list-style-type: decimal">
+<li>Data preparation</li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li>Model Implementation</li>
+</ol></li>
+<li><ol start="3" style="list-style-type: decimal">
+<li>Submission</li>
+</ol></li>
+</ul>
+<p>For a reproducible example clic <a href="https://colab.research.google.com/drive/1xiogjj0ciL2rsBe1bvmyub6EZs6r2y7c"><strong>here</strong></a>.</p>
+<div id="install-load-and-read-data" class="section level3">
+<h3>6.0 Install, Load and Read data</h3>
+<div id="install" class="section level4">
+<h4>6.0.1 Install</h4>
+<pre class="python"><code># Install packages 
+# scikit-learn &gt; 0.21 is necessary because this post use sklearn.impute.IterativeImputer
+!pip install scikit-learn==0.21rc2
+!pip3 install missingno
+!pip install git+https://github.com/csaybar/preml.git --upgrade
+!pip install category_encoders --upgrade
+!pip install featuretools --upgrade
+!pip install shap --upgrade</code></pre>
+</div>
+<div id="load" class="section level4">
+<h4>6.0.2 Load</h4>
+<pre class="python"><code># Future!
+from __future__ import division, absolute_import, print_function
+
+## Data science libraries
+import pandas as pd # data structures and data analysis tools
+import numpy as np # scientific computing
+from matplotlib import pyplot as plt # fast-viz in python
+import featuretools as ft
+
+## csaybar machine learning toolkit!
+import preml as pml 
+from preml.utils import fast_view
+from preml.utils import reduce_mem_usage
+from preml.models import BayesianOptimization
+from preml.plots import DUplots
+from preml.preprocess import re_transform
+from sklearn.pipeline import Pipeline
+
+## Sklearn ecosystem &lt;3!
+from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import IterativeImputer
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+import category_encoders as ce # encode categorical variables as numeric.
+
+## Hyperparameter Optimization
+from hyperopt import hp, tpe
+from hyperopt.fmin import fmin
+
+# Basic python!
+import os # Operating system interphases.
+import gc #Garbage Collector Interface.
+import time # handle time-related tasks.
+from contextlib import contextmanager # utilities for with-statement contexts.
+from collections import Counter # dict subclass for counting hashable objects.
+import urllib
+
+# GBDT frameworks! 
+import lightgbm as lgbm  # gradient boosting framework-1.
+
+# Model interpretation
+import shap
+
+pd.set_option(&#39;display.max_columns&#39;, 15) # Setting the max number of columns to display.
+pd.set_option(&#39;display.max_rows&#39;,18) # Setting the max number of rows to display.</code></pre>
+</div>
+<div id="read" class="section level4">
+<h4>6.0.3 Read</h4>
+<pre class="python"><code># Download the dataset
+url = &#39;https://raw.githubusercontent.com/csaybar/Titanic/master/&#39;
+urllib.request.urlretrieve(url+&#39;train.csv&#39;, &#39;train.csv&#39;)
+urllib.request.urlretrieve(url+&#39;test.csv&#39;, &#39;test.csv&#39;)
+
+
+#Let’s read in and take a peek at the data.
+filenames = (&#39;train.csv&#39;,&#39;test.csv&#39;)
+dataset = pd.DataFrame()
+
+for x in filenames:
+  files = pd.read_csv(x)
+  dataset = pd.concat([dataset,files],sort=False).reset_index(drop = True)  
+
+basedataset = dataset.copy() # it will help us to compare after feature engineering</code></pre>
+</div>
+</div>
+<div id="data-preparation" class="section level3">
+<h3>6.1Data Preparation</h3>
+<div id="data-understanding-du" class="section level4">
+<h4>6.1.1 Data understanding (DU)</h4>
+<p>Extracted from <a href="https://www.dummies.com/programming/big-data/phase-2-of-the-crisp-dm-process-model-data-understanding/">Data mining for dummies</a></p>
+<p>DU is the <strong>second phase</strong> of the Cross-Industry Standard Process for Data Mining (CRISP-DM) process model, <strong>you obtain data and verify that it is appropriate for your needs</strong>. You might identify issues that cause you to return to business understanding and revise your plan. You may even discover flaws in your business understanding, another reason to rethink goals and plans.</p>
+<p><strong><code>pml.utils.fast_view</code></strong> is a function that automatically detects the dtype (numeric and object ) of the pd.DataFrame columns and generate descriptive statistics that summarize the central tendency, dispersion, etc.</p>
+<pre class="python"><code>object_table, numeric_table = fast_view(dataset)
+
+# Changing data type
+f_float = [&#39;Fare&#39;, &#39;Age&#39;]
+f_int = [&#39;SibSp&#39;, &#39;Parch&#39;,&#39;Survived&#39;,&#39;Pclass&#39;,&#39;Parch&#39;]
+f_category = [&#39;Embarked&#39;, &#39;Ticket&#39;, &#39;Sex&#39;,&#39;Cabin&#39;]
+
+dataset[f_float] = dataset[f_float].astype(&#39;float&#39;, errors = &#39;ignore&#39;)
+dataset[f_int] = dataset[f_int].astype(&#39;int&#39;, errors = &#39;ignore&#39;)
+dataset[f_category] = dataset[f_category].astype(&#39;category&#39;, errors = &#39;ignore&#39;)  
+
+
+train = dataset.dropna(subset = [&#39;Survived&#39;]) # train dataset
+test = dataset[~ dataset.index.isin(train.index)] # test dataset</code></pre>
+<pre class="python"><code>object_table # Object table</code></pre>
+<table class="table table-bordered table-hover table-condensed">
+<thead>
+<tr>
+<th title="Field #1">
+</th>
+<th title="Field #2">
+Cabin
+</th>
+<th title="Field #3">
+Embarked
+</th>
+<th title="Field #4">
+Name
+</th>
+<th title="Field #5">
+Sex
+</th>
+<th title="Field #6">
+Ticket
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+count
+</td>
+<td>
+295
+</td>
+<td>
+1307
+</td>
+<td>
+1309
+</td>
+<td>
+1309
+</td>
+<td>
+1309
+</td>
+</tr>
+<tr>
+<td>
+unique
+</td>
+<td>
+186
+</td>
+<td>
+3
+</td>
+<td>
+1307
+</td>
+<td>
+2
+</td>
+<td>
+929
+</td>
+</tr>
+<tr>
+<td>
+top
+</td>
+<td>
+C23 C25 C27
+</td>
+<td>
+S
+</td>
+<td>
+Kelly, Mr. James
+</td>
+<td>
+male
+</td>
+<td>
+CA. 2343
+</td>
+</tr>
+<tr>
+<td>
+freq
+</td>
+<td>
+6
+</td>
+<td>
+914
+</td>
+<td>
+2
+</td>
+<td>
+843
+</td>
+<td>
+11
+</td>
+</tr>
+<tr>
+<td>
+NaN_exist?
+</td>
+<td>
+True
+</td>
+<td>
+True
+</td>
+<td>
+False
+</td>
+<td>
+False
+</td>
+<td>
+False
+</td>
+</tr>
+<tr>
+<td>
+%perc_NA
+</td>
+<td>
+0.775
+</td>
+<td>
+0.002
+</td>
+<td>
+0.0
+</td>
+<td>
+0.0
+</td>
+<td>
+0.0
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="python"><code>numeric_table # Numeric table</code></pre>
+<table class="table table-bordered table-hover table-condensed">
+<thead>
+<tr>
+<th title="Field #1">
+</th>
+<th title="Field #2">
+Age
+</th>
+<th title="Field #3">
+Fare
+</th>
+<th title="Field #4">
+Parch
+</th>
+<th title="Field #5">
+PassengerId
+</th>
+<th title="Field #6">
+Pclass
+</th>
+<th title="Field #7">
+SibSp
+</th>
+<th title="Field #8">
+Survived
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+count
+</td>
+<td align="right">
+1046.0
+</td>
+<td align="right">
+1308.0
+</td>
+<td align="right">
+1309.0
+</td>
+<td align="right">
+1309.0
+</td>
+<td align="right">
+1309.0
+</td>
+<td align="right">
+1309.0
+</td>
+<td align="right">
+891.0
+</td>
+</tr>
+<tr>
+<td>
+mean
+</td>
+<td align="right">
+29.9
+</td>
+<td align="right">
+33.3
+</td>
+<td align="right">
+0.4
+</td>
+<td align="right">
+655.0
+</td>
+<td align="right">
+2.3
+</td>
+<td align="right">
+0.5
+</td>
+<td align="right">
+0.4
+</td>
+</tr>
+<tr>
+<td>
+std
+</td>
+<td align="right">
+14.4
+</td>
+<td align="right">
+51.8
+</td>
+<td align="right">
+0.9
+</td>
+<td align="right">
+378.0
+</td>
+<td align="right">
+0.8
+</td>
+<td align="right">
+1.0
+</td>
+<td align="right">
+0.5
+</td>
+</tr>
+<tr>
+<td>
+min
+</td>
+<td align="right">
+0.2
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+1.0
+</td>
+<td align="right">
+1.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+25%
+</td>
+<td align="right">
+21.0
+</td>
+<td align="right">
+7.9
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+328.0
+</td>
+<td align="right">
+2.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+50%
+</td>
+<td align="right">
+28.0
+</td>
+<td align="right">
+14.5
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+655.0
+</td>
+<td align="right">
+3.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+75%
+</td>
+<td align="right">
+39.0
+</td>
+<td align="right">
+31.3
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+982.0
+</td>
+<td align="right">
+3.0
+</td>
+<td align="right">
+1.0
+</td>
+<td align="right">
+1.0
+</td>
+</tr>
+<tr>
+<td>
+max
+</td>
+<td align="right">
+80.0
+</td>
+<td align="right">
+512.3
+</td>
+<td align="right">
+9.0
+</td>
+<td align="right">
+1309.0
+</td>
+<td align="right">
+3.0
+</td>
+<td align="right">
+8.0
+</td>
+<td align="right">
+1.0
+</td>
+</tr>
+<tr>
+<td>
+NaN_exist?
+</td>
+<td align="right">
+1.0
+</td>
+<td align="right">
+1.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+1.0
+</td>
+</tr>
+<tr>
+<td>
+%perc_NA
+</td>
+<td align="right">
+0.2
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.3
+</td>
+</tr>
+<tr>
+<td>
+tukey_outlier_1.5
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+4.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+9.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+zscore_outlier_7.5
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+4.0
+</td>
+<td align="right">
+2.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+shapiro_pvalue
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+DAgostino_pvalue
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+kstest_pvalue
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+0.0
+</td>
+</tr>
+<tr>
+<td>
+Skew
+</td>
+<td align="right">
+0.4
+</td>
+<td align="right">
+4.4
+</td>
+<td align="right">
+3.7
+</td>
+<td align="right">
+0.0
+</td>
+<td align="right">
+-0.6
+</td>
+<td align="right">
+3.8
+</td>
+<td align="right">
+0.5
+</td>
+</tr>
+<tr>
+<td>
+Kurtosis
+</td>
+<td align="right">
+0.1
+</td>
+<td align="right">
+26.9
+</td>
+<td align="right">
+21.5
+</td>
+<td align="right">
+-1.2
+</td>
+<td align="right">
+-1.3
+</td>
+<td align="right">
+20.0
+</td>
+<td align="right">
+-1.8
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="python"><code># We will eliminate the variable Cabin because have a lot of np.NaN values.
+dataset = dataset.drop([&#39;Cabin&#39;],axis=1)</code></pre>
+<p>NaN values existing in 5 of 12 base features, the more sophisticated imputation algorithms use <a href="https://scikit-learn.org/stable/modules/impute.html">round-robin regression approaches</a>.So, our special corplots (See <strong>preml.plots.DUplots.corplot</strong>) can we give us an initial idea of the imputation efficiency.</p>
+<pre class="python"><code>from preml.plots import DUplots
+du = DUplots(db_train = train,db_test = test)
+du.corplot(remove = [&#39;Survived&#39;,&#39;PassengerId&#39;],fig_size=(15,5))</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image1.png" /></p>
+<pre class="python"><code>du.missingplot(remove=[&#39;Survived&#39;],figsize = (8,4))</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image2.png" />
+<img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image3.png" /></p>
+<p>Additionally, <strong><code>preml.plots.DUplots.missingplot()</code></strong> can account for the amount of missing data too.</p>
+<pre class="python"><code>du.missingbar(remove=[&#39;Survived&#39;],figsize = (8,4))</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image4.png" />
+<img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image5.png" /></p>
+<p>Now, we’ve got a better sense of our variables, their class type, NaN distribution, balances, etc. Here, a summary after see all features and plots:</p>
+<p>Discoveries:</p>
+<ul>
+<li>float (numeric) -&gt; [Age, Fare]</li>
+<li>ordinal -&gt; [Pclass, SibSp, Parch]</li>
+<li>nominal -&gt; [Embarked, Sex, Parch, Ticket, <strong>Survived(TARGET)</strong>]</li>
+<li>The entire dataset have 1309 observations and 12 variables.</li>
+<li>The test dataset corresponds the 0.319 % of the entire dataset.<br />
+</li>
+<li>The correlation between features is poor.</li>
+<li>Fare have missing data in test but not in the training dataset.</li>
+<li>More than the <strong>20%</strong> of the passengers do not have a age record.</li>
+<li>More than the <strong>75%</strong> of the passengers do not have a Cabin record.</li>
+<li>The missing data distribution is equal in the train as a test dataset.</li>
+<li><strong>0.3838 %</strong> of the passengers survived.</li>
+<li>None of the features have a normal distribution.</li>
+</ul>
+</div>
+<div id="splitting-the-name-column-in-the-surnames-and-title-of-passengers" class="section level4">
+<h4>6.1.2 Splitting the name column in the Surnames and Title of Passengers</h4>
+<p>In my opinion (with a naked eye) after DU, the more promising feature is the “<strong>Name</strong>” column because it contains two important characteristics:</p>
+<ul>
+<li>The <strong>surname</strong> that can help us to represent families.</li>
+<li>The <strong>passenger title</strong> a characteristic that was taken to prioritize survivors (Women and children first!).</li>
+</ul>
+<p>It’s time fot a bit of <strong><a href="https://regexr.com/">regex</a></strong>!</p>
+<pre class="python"><code>print(&quot;Name: | &quot; + &quot; | &quot;.join(dataset[&#39;Name&#39;].tolist()))
+title = dataset[&#39;Name&#39;].str.extract(&#39;([A-Za-z]+)\.&#39;,expand=True)[0]
+print(&quot;Title: &quot; + &quot; | &quot;.join(title))
+surname = dataset[&#39;Name&#39;].str.extract(&#39;([A-Za-z]+)\,&#39;,expand=True)[0]
+print(&quot;Surname: &quot; + &quot; | &quot;.join(surname))
+
+dataset[&#39;Title&#39;] = title; dataset[&#39;Surname&#39;] = surname
+del dataset[&#39;Name&#39;]</code></pre>
+<p>In anyone ML pipeline is essential getting an excellent visual representation to find out hidden patterns in the data. To make it easily accessible, the Python package <strong>preml</strong> can also draws plots similar to <a href="https://christophm.github.io/interpretable-ml-book/pdp.html">partial dependence plots</a>, but directly from data instead of using a trained model. This technique was inspired in the python package <a href="https://github.com/abhayspawar/featexp">featexp</a>, I have rewritten all the code and create a class (DUplots) for a more easily use.</p>
+<p>For example, <strong><code>preml.DUplots</code></strong> can help you to understand if the features <code>Title</code> vs. [<code>Age</code>, <code>Fare</code>] have some kind of relationship.</p>
+<pre class="python"><code>from preml.plots import DUplots
+
+#eliminate NA of the &quot;Age&quot; column.
+dataset_age = dataset.dropna(subset=[&#39;Age&#39;])
+
+
+du = DUplots(db_train = dataset_age,             
+             target=&#39;Age&#39;,
+             features = [&#39;Fare&#39;,&#39;Title&#39;])
+du.plot()</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image6.png" />
+<img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image7.png" />
+If it is a numeric features <strong><code>preml.DUplots</code></strong> will create equal population bins (X-axis). Otherwise, if it is a categoric feature <strong><code>preml.DUplots</code></strong> will use the respective encoding. Always <strong><code>preml.DUplots</code></strong> will generate two plots. The first one, calculates target mean (‘Age’) in each bin, and the other, is just a histogram.</p>
+<p>Inspecting our plots (see above), the first row of figures (Age vs. Fare) say us nothing relevant. However, the second saying us some important: <strong>Passenger with the title of Master are CHILD!</strong>, I am in doubt if all Master Passengers are male, to be sure we can run <strong><code>preml.DUplots</code></strong> one more time (like a little ingenuity).</p>
+<p><strong>Psss: </strong> <strong><code>preml.DUplots</code></strong> can also return information as a table.</p>
+<pre class="python"><code>du = DUplots(db_train = dataset_age[dataset_age.Title == &#39;Master&#39;],
+             target=&#39;Age&#39;,
+             features = [&#39;Sex&#39;])
+du.plot()
+
+du.tables()[&#39;Sex&#39;]</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image8.png" /></p>
+<table class="table table-bordered table-hover table-condensed">
+<thead>
+<tr>
+<th title="Field #1">
+Sex
+</th>
+<th title="Field #2">
+Samples_in_bin
+</th>
+<th title="Field #3">
+Age_mean
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+female
+</td>
+<td align="right">
+0
+</td>
+<td>
+NaN
+</td>
+</tr>
+<tr>
+<td>
+male
+</td>
+<td align="right">
+53
+</td>
+<td>
+5.482642
+</td>
+</tr>
+</tbody>
+</table>
+<p>We got it!, Now you know that “Master” Title refers to boys and knows how <strong><code>preml.DUplots</code></strong> works! We will create more feature in the next section.</p>
+</div>
+<div id="generalization-of-the-title-feature" class="section level4">
+<h4>6.1.3 Generalization of the “Title” feature</h4>
+<pre class="python"><code>def newTitle(dataset):
+  order_name = {&#39;Mlle&#39;: &#39;Mrs&#39;, &#39;Major&#39;: &#39;Mr&#39;, &#39;Col&#39;: &#39;Mr&#39;, &#39;Sir&#39;: &#39;Mr&#39;,
+                &#39;Don&#39;: &#39;Mr&#39;, &#39;Mme&#39;: &#39;Mrs&#39;,&#39;Jonkheer&#39;: &#39;Mr&#39;, &#39;Lady&#39;: &#39;Mrs&#39;,
+                &#39;Capt&#39;: &#39;Mr&#39;, &#39;Countess&#39;: &#39;Mrs&#39;, &#39;Ms&#39;: &#39;Mrs&#39;, &#39;Dona&#39;: &#39;Mrs&#39;,
+                &#39;Miss&#39;: &#39;Mrs&#39;, &#39;Mr&#39;:&#39;Mr&#39;, &#39;Mrs&#39;:&#39;Mrs&#39;, &#39;Master&#39;:&#39;boy&#39;, &#39;Dr&#39;:&#39;Mr&#39;,
+                &#39;Rev&#39;: &#39;Mr&#39;              
+                }
+  #Drs females
+  Title = dataset.Title.map(order_name)
+  dr_females = dataset[(dataset[&#39;Sex&#39;]==&#39;female&#39;) &amp; (dataset[&#39;Title&#39;]==&#39;Dr&#39;)]
+  Title[dr_females.index[0]] = &#39;Mrs&#39;
+  return Title</code></pre>
+<pre class="python"><code>dataset[&#39;Title&#39;] = newTitle(dataset)</code></pre>
+</div>
+<div id="missing-data" class="section level4">
+<h4>6.1.4 Missing data</h4>
+<p>To handle missing data existing two groups of imputation algorithm:
+- <strong>univariate</strong>, which imputes values in the i-th feature dimension using only non-missing values in that feature dimension.
+- <strong>multivariate</strong> , which imputes values considering the entire set of available feature dimensions to estimate the missing values.</p>
+<p><strong>Sklearn</strong> has recently implemented the multivariate approach in the class <a href="https://scikit-learn.org/dev/modules/generated/sklearn.impute.IterativeImputer.html"><strong>IterativeImputer</strong></a>, which models each feature with missing values as a function of other features, and uses that estimate for imputation. It does so in an iterated round-robin fashion: at each step, a feature column is designated as output y and the other feature columns are treated as inputs X. A regressor is fit on (X, y) for known y. Then, the regressor is used to predict the missing values of y. This is done for each feature in an iterative fashion, and then is repeated for max_iter imputation rounds. The results of the final imputation round are returned.</p>
+<p>You can learn how implement it checking the <strong>ImputeTitanic_db</strong> function.</p>
+<pre class="python"><code>def ImputeTitanic_db(dataset):
+  db = dataset.drop([&#39;Surname&#39;,&#39;PassengerId&#39;,&#39;Survived&#39;,&#39;Ticket&#39;],axis=1)
+  y = dataset[&#39;Survived&#39;]
+  # 2.4.1. Bayesian Target_Encoding 
+  te = (&#39;te&#39;, ce.TargetEncoder(handle_missing= &#39;return_nan&#39;,drop_invariant = False))
+  # 2.4.2. Iterative Imputer (using ExtraTreesRegressor)
+  RANDOM_STATE = 100
+  imputer_estimator = ExtraTreesRegressor(random_state = RANDOM_STATE,n_estimators=100)
+  imputation = (&#39;ii&#39;,IterativeImputer(random_state = RANDOM_STATE, estimator = imputer_estimator))
+  preprocess = Pipeline([te,imputation])
+  impute_db = pd.DataFrame(preprocess.fit_transform(db,y))
+  impute_db.columns = db.columns
+  
+  col_obj = dataset[[&#39;Surname&#39;,&#39;PassengerId&#39;,&#39;Survived&#39;,&#39;Ticket&#39;]]
+  col_num = re_transform(old_db = db,new_db = impute_db,retransform = [&#39;Fare&#39;,&#39;Embarked&#39;,&#39;Title&#39;,&#39;Sex&#39;])
+  all_db = pd.concat([col_obj,col_num],axis=1)
+  
+  return all_db</code></pre>
+<pre class="python"><code>dataset = ImputeTitanic_db(dataset)</code></pre>
+</div>
+<div id="adding-nannies-to-the-family" class="section level4">
+<h4>6.1.5 Adding Nannies to the family!</h4>
+Idea extracted from <a href="https://www.kaggle.com/jack89roberts/titanic-using-ticket-groupings">Jack Roberts</a> and <a href="https://www.kaggle.com/erikbruin/titanic-2nd-degree-families-and-majority-voting/report">Erik Bruin’s</a> .
+<center>
+<img src='https://drive.google.com/uc?export=view&id=1bXJZSwODFoK6TGGR3yMzcAra30QgAN2M' >
+</center>
+<p>You can think that all families (Surname) travel together, but this is not 100% true. Surname doesn’t always imply that passengers are in the same family and traveling together. It is important because their probability of <strong>Survived</strong> will not be the same!. There are many kernels than explains how to create robust <strong>Passenger groups</strong> (<a href="https://www.kaggle.com/francksylla/titanic-machine-learning-from-disaster">here</a> or <a href="https://www.kaggle.com/erikbruin/titanic-2nd-degree-families-and-majority-voting/report">here</a>). While the creation of a “pure” group can improve more your score in LB, I limit to regroup families considering nannies (if she will exist!).</p>
+<pre class="python"><code># 6.1.5.1 Select the possible nannies
+possible_nannies = (dataset[(dataset.groupby(&#39;Surname&#39;)[&#39;Surname&#39;].transform(&#39;count&#39;) == 1)]
+                    .query(&quot;Sex == &#39;female&#39;&quot;)
+                    .index)
+
+# 6.1.5.1 Families with childs (&lt; 15 years)
+bigFamilies = (dataset[(dataset.groupby(&#39;Surname&#39;)[&#39;Surname&#39;].transform(&#39;count&#39;) &gt; 1)]) 
+bigFamilies_le15 = bigFamilies[bigFamilies.groupby(&#39;Surname&#39;)[&#39;Age&#39;].transform(&#39;min&#39;) &lt; 15]
+bigFamilies_le15_m = bigFamilies_le15.groupby(&#39;Surname&#39;)[[&#39;Surname&#39;,&#39;Ticket&#39;]].agg(lambda x: pd.Series.mode(x)[0])
+bigFamilies_le15_m = bigFamilies_le15_m.reset_index(drop=True)
+
+
+for x in possible_nannies:
+  # Comparate the ticket of each possible nanny vs. all tickets families
+  pot_position = np.where(bigFamilies_le15_m[&#39;Ticket&#39;] == dataset.loc[x,&#39;Ticket&#39;])[0]
+  if sum(pot_position) :    
+    #Changing the nanny Surname
+    dataset.loc[x,&#39;Surname&#39;] = bigFamilies_le15_m.loc[pot_position[0],&#39;Surname&#39;]    </code></pre>
+</div>
+<div id="family-size" class="section level4">
+<h4>6.1.6 Family Size</h4>
+<pre class="python"><code>dataset[&#39;Family_Size&#39;] = dataset.groupby(&#39;Surname&#39;)[&#39;Surname&#39;].transform(&#39;count&#39;)</code></pre>
+</div>
+<div id="fare-by-family" class="section level4">
+<h4>6.1.7 Fare by Family</h4>
+<pre class="python"><code>dataset[&#39;FbFare&#39;] = dataset[&#39;Fare&#39;]*dataset[&#39;Family_Size&#39;]</code></pre>
+</div>
+<div id="woman-child-group-wcg-feature" class="section level4">
+<h4>6.1.8 Woman-child-group (WCG) Feature</h4>
+<p>WCG Is a feature firstly proposed by <a href="https://www.kaggle.com/cdeotte">Chris Deotte</a> <a href="https://www.kaggle.com/cdeotte/titanic-using-name-only-0-81818">here</a>. The idea behind this is to use an empirical tree that takes into account the “<strong>Surname</strong>”, “<strong>Title</strong>” and “<strong>Survived</strong>” features. The dataset we will split in three as follows:</p>
+<ul>
+<li><strong>The WCG dataset</strong>: Estimate using just the WCG (without model).</li>
+<li><strong>Female Dataset</strong>: A dataset of women.</li>
+<li><strong>Male Dataset</strong>: A dataset of men.</li>
+</ul>
+<center>
+<img src='https://drive.google.com/uc?export=view&id=17sqMRdVzdDwfg3XAQcTWoegDcvgnoPmo' >
+</center>
+<pre class="python"><code>def create_WCG(dataset):
+  # WCG feature
+  surname = pd.DataFrame({&#39;Surname&#39;:dataset[&#39;Surname&#39;]})
+  family_size = surname.groupby(&#39;Surname&#39;)[&#39;Surname&#39;].transform(&#39;count&#39;)
+  surname.loc[(family_size&lt;=1) | (dataset[&#39;Title&#39;] == &#39;Mr&#39;),&#39;Surname&#39;] = &#39;nogroup&#39;
+  surname[&#39;Survived&#39;] = dataset[&#39;Survived&#39;]
+  surname[&#39;Title&#39;] = dataset[&#39;Title&#39;]
+  surname[&#39;WCG&#39;] =  surname.groupby(&#39;Surname&#39;)[&#39;Survived&#39;].transform(&#39;mean&#39;)
+  
+  surname[&#39;WCG_p&#39;] = 0
+  
+  surname.loc[surname[&#39;Title&#39;]==&#39;Mrs&#39;,&#39;WCG_p&#39;] = 1
+  surname.loc[(surname[&#39;Title&#39;]==&#39;boy&#39;) &amp; (surname[&#39;WCG&#39;]==1),&#39;WCG_p&#39;] = 1
+  surname.loc[(surname[&#39;Title&#39;]==&#39;Mrs&#39;) &amp; (surname[&#39;WCG&#39;]==0),&#39;WCG_p&#39;] = 0
+  
+  
+  surname[&#39;split&#39;] = &#39;model&#39;
+  surname.loc[(surname[&#39;Title&#39;]==&#39;boy&#39;) &amp; (surname[&#39;WCG&#39;]==1),&#39;split&#39;] = &#39;WCG&#39;
+  surname.loc[(surname[&#39;Title&#39;]==&#39;Mrs&#39;) &amp; (surname[&#39;WCG&#39;]==0),&#39;split&#39;] = &#39;WCG&#39;
+
+  return surname[&#39;WCG_p&#39;], surname[&#39;split&#39;]</code></pre>
+<pre class="python"><code>dataset[&#39;WCG&#39;], dataset[&#39;split&#39;]= create_WCG(dataset)</code></pre>
+<p>The efficiency of WCG can be measure by <strong><code>du.plot()</code></strong> and <strong><code>du.table()</code></strong></p>
+<pre class="python"><code># @title Duplot
+dataset[&#39;WCG&#39;] =  dataset[&#39;WCG&#39;].astype(&#39;category&#39;)
+du = DUplots(db_train = dataset[dataset[&#39;Survived&#39;].notnull()],
+             target=&#39;Survived&#39;,
+             features = [&#39;WCG&#39;])
+du.plot()
+du.tables()</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/image9.png" /></p>
+<p>This feature itself can reach an impressive 89% (85% ) of accuracy for predict survived (die) in training dataset. <strong>Unbelievable!</strong></p>
+</div>
+</div>
+<div id="model-implementation" class="section level3">
+<h3>6.2 Model Implementation</h3>
+<p>WCG is a great feature, but there is a big group that only predicts died (0) if the Passenger is a Male or lived (1) if the Passenger is a Female (See diagram above). In this section, you will replace this part by a ML model (Lightgbm).</p>
+<div id="splitting-the-dataset" class="section level4">
+<h4>6.2.1 Splitting the dataset</h4>
+<pre class="python"><code>features = [&#39;PassengerId&#39;,&#39;Pclass&#39;,&#39;Age&#39;,&#39;Family_Size&#39;,&#39;FbFare&#39;] # choose the features to do the prediction
+
+# Dataset WCG
+dataset_wcg = dataset[(dataset[&#39;split&#39;] == &#39;WCG&#39;) &amp; dataset[&#39;Survived&#39;].isnull()]
+dataset_wcg = dataset_wcg[[&#39;PassengerId&#39;,&#39;WCG&#39;]]
+dataset_wcg.columns = [&#39;PassengerId&#39;,&#39;Survived&#39;]</code></pre>
+<pre class="python"><code># Dataset male 
+dataset_male = dataset[(dataset[&#39;split&#39;] == &#39;model&#39;) &amp; (dataset[&#39;Sex&#39;] == &#39;male&#39;)]
+
+# Male train
+dataset_male_train = dataset_male[dataset_male[&#39;Survived&#39;].notnull()]
+X_train_male = dataset_male_train[features]
+y_train_male = dataset_male_train[&#39;Survived&#39;]
+
+# Male test
+dataset_male_test = dataset_male[dataset_male[&#39;Survived&#39;].isnull()]
+X_test_male = dataset_male_test[features]
+
+PassengerId_male = dataset_male_test[&#39;PassengerId&#39;].reset_index(drop=True)</code></pre>
+<pre class="python"><code># Dataset female
+dataset_female = dataset[(dataset[&#39;split&#39;] == &#39;model&#39;) &amp; (dataset[&#39;Sex&#39;] == &#39;female&#39;)]
+
+# Female train
+dataset_female_train = dataset_female[dataset_female[&#39;Survived&#39;].notnull()]
+X_train_female = dataset_female_train[features]
+y_train_female = dataset_female_train[&#39;Survived&#39;]
+
+# Female test
+dataset_female_test = dataset_female[dataset_female[&#39;Survived&#39;].isnull()]
+X_test_female = dataset_female_test[features]
+
+PassengerId_female = dataset_female_test[&#39;PassengerId&#39;].reset_index(drop=True)</code></pre>
+</div>
+<div id="feature-engineering-with-featuretools" class="section level4">
+<h4>6.2.2 Feature Engineering with featuretools</h4>
+<p>In this post I do not cover all the details related to featuretools but is you are interesting, I highly recommend looking at all the <a href="https://www.featuretools.com/demos/">official demos</a> and this <a href="https://www.kaggle.com/liananapalkova/automated-feature-engineering-for-titanic-dataset">fantastic kernel</a>.</p>
+<pre class="python"><code>def create_titanic_entity(df,ID_index, entity_name = &#39;EntitySet&#39;, bei = &#39;train&#39;):
+  es = ft.EntitySet(id = entity_name)
+  es = es.entity_from_dataframe(entity_id = &#39;train&#39;, dataframe = df, 
+                              variable_types = {
+                                  &#39;PassengerId&#39;: ft.variable_types.Index
+                              },
+                              index = ID_index)    
+  es = es.normalize_entity(base_entity_id=bei, new_entity_id=&#39;Pclass&#39;, index=&#39;Pclass&#39;)
+  es = es.normalize_entity(base_entity_id=bei, new_entity_id=&#39;FbFare&#39;, index=&#39;FbFare&#39;)
+  es = es.normalize_entity(base_entity_id=bei, new_entity_id=&#39;Family_Size&#39;, index=&#39;Family_Size&#39;)  
+  return es
+
+def fe_titanic(df,ID_index=&#39;PassengerId&#39;,entity_name = &#39;Titanic&#39;,bei=&#39;train&#39;, max_depth = 2):
+  es = create_titanic_entity(df, ID_index = ID_index, entity_name = entity_name, bei=bei)
+  
+  features, feature_names = ft.dfs(entityset = es,
+                                   target_entity = bei,
+                                   max_depth = max_depth)
+  return (es,features, feature_names)</code></pre>
+<pre class="python"><code>es, X_train_male_ft, _ = fe_titanic(X_train_male)
+es, X_test_male_ft, _ = fe_titanic(X_test_male)
+
+es, X_train_female_ft, _ = fe_titanic(X_train_female)
+es, X_test_female_ft, _ = fe_titanic(X_test_female)</code></pre>
+<pre class="python"><code>es.plot() #relationships between tables</code></pre>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/images10.png" /></p>
+</div>
+<div id="feature-selection-considering-correlation-and-shapley-values" class="section level4">
+<h4>6.2.3 Feature Selection considering correlation and shapley values</h4>
+<p>In the next cell, you use the function <strong>select_ft</strong> to get the most critical features considering correlations each other and <strong>SHAP</strong>.</p>
+<p>In a nutshell, <strong><a href="https://github.com/slundberg/shap">SHAP</a></strong> use game theory to interpret the target model. All features are “contributor” and trying to predict the task which is “game” and the “reward” is actual prediction minus the result from explanation model. <strong>SHAP</strong> unlike standard global feature importance measures (weight, cover, and gain) provide <strong>consistent</strong> (whenever we change a model the attributed importance for that feature should not decrease) and <strong>accuracy</strong> (the sum of all the feature importances should sum up to the total importance of the model).</p>
+<pre class="python"><code>def VI_shapley(shap_values,X_train):
+  shap_sum = np.abs(shap_values).mean(axis=0)
+  importance_df = pd.DataFrame([X_train.columns.tolist(), shap_sum.tolist()]).T
+  importance_df.columns = [&#39;column_name&#39;, &#39;shap_importance&#39;]
+  importance_df = importance_df.sort_values(&#39;shap_importance&#39;, ascending=False)
+  importance_df[&#39;shap_importance&#39;] = importance_df[&#39;shap_importance&#39;].astype(&#39;float&#39;)
+  return importance_df
+
+def select_ft(model, X, y,n_ft = 5 ,cor_thr = 0.9):
+  model.fit(X,y)
+  #SHAP
+  explainer = shap.TreeExplainer(model)
+  shap_values = explainer.shap_values(X)
+  vi_shp = VI_shapley(shap_values,X)
+  best_features = vi_shp.sort_values(&#39;shap_importance&#39;,ascending=False).reset_index(drop=True)
+  
+  #CORR
+  initial_ft = best_features.iloc[0:n_ft,0].tolist() #Getting the most Importance (according to shap)
+  
+  #Create a lower triangle from a correlation matrix
+  cormtx = X[initial_ft].corr()
+  mask = np.zeros_like(cormtx, dtype=np.bool)
+  mask[np.triu_indices_from(mask)] = True
+  cormtx[mask]=np.NaN
+  
+  
+  if sum((cormtx&gt;cor_thr).values.flatten()):
+    cor_info = cormtx.reset_index().melt(&#39;index&#39;)  
+    print(&#39;A high correlation between features was found!&#39;)
+    print(cor_info[cor_info.value&gt;cor_thr])
+  return initial_ft</code></pre>
+<pre class="python"><code>model =lgbm.LGBMClassifier(boosting_type=&#39;dart&#39;, random_state=10)
+fi_male = select_ft(model,X_train_male_ft,y_train_male)
+#fi_male.remove(&#39;FbFare.MODE(train.Pclass)&#39;)
+fi_female = select_ft(model,X_train_female_ft,y_train_female)</code></pre>
+</div>
+<div id="bayesian-optimization-for-getting-hyperparameters" class="section level4">
+<h4>6.2.4 Bayesian Optimization for getting Hyperparameters!</h4>
+<p>Optimization tries to find the set the parameters that minimize a specific function. The mentioned situation would appear easy to solve (Grid Search and Random Search), but the question makes complicated when we work with tens or hundreds of parameters and the model to evaluate is computationally expensive.</p>
+<p>Bayesian optimization (implemented in the <strong><a href="https://github.com/hyperopt/hyperopt">Hyperopt</a></strong> Python packages) is a sequential algorithm that takes advantage of the prior stage to make future predictions. Understand the <a href="http://proceedings.mlr.press/v28/bergstra13.pdf">mathematical behind this algorithm</a> can be a little intimidating. However, the <strong>Hyperopt API</strong> is really easy to use you just need the follows:</p>
+<ul>
+<li><strong>Objective Function</strong>: takes in an input and returns a loss to minimize</li>
+<li><strong>Domain space</strong>: the range of input values to evaluate</li>
+<li><strong>Optimization Algorithm</strong>: the method used to construct the surrogate function and choose the next values to evaluate</li>
+<li><strong>Results</strong>: score, value pairs that the algorithm uses to build the model</li>
+</ul>
+<p>The <strong><code>preml.models.BayesianOptimization</code></strong> joins these four parts in just one class!. See the documentation.</p>
+<pre class="python"><code>def bayesian_optim(model,X,y):
+  
+  model_params = [(&#39;hp.quniform&#39;,{&#39;label&#39;:&#39;model__num_leaves&#39;, &#39;low&#39;:3,&#39;high&#39;:100,&#39;q&#39;:1},&#39;int&#39;),
+                  (&#39;hp.quniform&#39;,{&#39;label&#39;:&#39;model__max_depth&#39;, &#39;low&#39;:3,&#39;high&#39;:50,&#39;q&#39;:1},&#39;int&#39;),
+                  (&#39;hp.uniform&#39;,{&#39;label&#39;:&#39;model__colsample_bytree&#39;, &#39;low&#39;:0.01,&#39;high&#39;:1.0},&#39;float&#39;),
+                  (&#39;hp.uniform&#39;,{&#39;label&#39;:&#39;model__min_child_weight&#39;, &#39;low&#39;:1,&#39;high&#39;:10},&#39;float&#39;),
+                  (&#39;hp.quniform&#39;,{&#39;label&#39;:&#39;model__max_bin&#39;, &#39;low&#39;:10,&#39;high&#39;:1000,&#39;q&#39;:10},&#39;int&#39;)                                   
+                 ]
+
+  crossval_params = {&#39;n_splits&#39;:5,&#39;n_repeats&#39;:5,&#39;random_state&#39;:100}
+  cv = RepeatedStratifiedKFold(**crossval_params)
+  
+  cv_params = {&#39;estimator&#39;:model,
+               &#39;X&#39;:X,
+               &#39;y&#39;:y,
+               &#39;scoring&#39;:&#39;roc_auc&#39;,
+               &#39;cv&#39;:cv}
+
+  byopt_model = BayesianOptimization(params=model_params,
+                                     max_evals=50,
+                                     cv_params=cv_params,
+                                     cv_stat=np.median)
+
+  byopt_model.search()
+  return cv_params[&#39;estimator&#39;]</code></pre>
+<pre class="python"><code>def ROC_AUCplot(probs,y):
+  &#39;Plotting the ROC curve&#39;
+  fpr, tpr, thresholds = roc_curve(y,probs[:, 1])
+  
+  plt.plot([0, 1], [0, 1], linestyle=&#39;--&#39;)
+  # plot the roc curve for the model
+  plt.plot(fpr, tpr, marker=&#39;.&#39;)
+  plt.xlabel(&#39;False Positive Rate&#39;)
+  plt.ylabel(&#39;True Positive Rate&#39;)
+  plt.title(&#39;Receiver operating characteristic example&#39;)
+  plt.legend(loc=&quot;lower right&quot;)
+  # show the plot
+  pyplot.show()</code></pre>
+<pre class="python"><code>def optim_acc_score(model,data,target,iterations = 100, rgn = [0,1]):
+  &quot;&quot;&quot;
+  optim acc-score
+  arguments:
+    - model      : Put your model.
+    - data       : X_values
+    - target     : y_values
+    - iterations : Number of iteration (Force brute)
+    - rgn        : Range searching for f1-threshold.
+  return:
+    Best f1-score found
+  &quot;&quot;&quot;
+  def optim_model(x):
+    pred_df = pd.DataFrame(model.predict_proba(data))
+    y_pred = (pred_df.iloc[:,1].values &gt; x)*1
+    return accuracy_score(target, y_pred)
+  rango = np.linspace(rgn[0], rgn[1], iterations)
+  accuracy_scr = pd.Series([optim_model(z) for z in rango])
+  return rango[accuracy_scr.idxmax()]</code></pre>
+<ul>
+<li><strong>Female Dataset Prediction</strong></li>
+</ul>
+<pre class="python"><code># 6.2.1.1 Select variables considering the section 6.2.3
+X_train_female_ft_fs = X_train_female_ft[fi_female]
+female_model = Pipeline([(&#39;scale&#39;,StandardScaler()),
+                    (&#39;model&#39;,lgbm.LGBMClassifier(boosting_type=&#39;dart&#39;))])
+
+# 6.2.1.2 Bayesian optimization
+female_model_optim = bayesian_optim(female_model,X_train_female_ft[fi_male],y_train_female)
+female_model_optim.fit(X_train_female_ft_fs,y_train_female)
+
+ROC_AUCplot(probs = female_model_optim.predict_proba(X_train_female),
+            y = y_train_female.values)
+
+# 6.2.1.3 Optim accuracy score
+op_thrs = optim_acc_score(female_model_optim,X_train_female,y_train_female)
+female_predictions = (female_model_optim.predict_proba(X_test_female)[:,1] &gt; op_thrs)*1
+
+# 6.2.1.4 Make a pd.DataFrame for submission
+female_submission = pd.concat([PassengerId_female,pd.Series(female_predictions)],axis=1)
+female_submission.columns = [&#39;PassengerId&#39;,&#39;Survived&#39;]</code></pre>
+<ul>
+<li><strong>Male Dataset Prediction</strong></li>
+</ul>
+<pre class="python"><code># 6.2.1.5 Select variables considering the section 6.2.3
+X_train_male_ft_fs = X_train_male_ft[fi_male]
+male_model = Pipeline([(&#39;scale&#39;,StandardScaler()),
+                    (&#39;model&#39;,lgbm.LGBMClassifier(boosting_type=&#39;dart&#39;))])
+
+# 6.2.1.2 Bayesian optimization
+male_model_optim = bayesian_optim(male_model,X_train_male_ft_fs,y_train_male)
+male_model_optim.fit(X_train_male_ft_fs,y_train_male)
+
+ROC_AUCplot(probs = male_model_optim.predict_proba(X_train_male),
+            y = y_train_male.values)
+
+# 6.2.1.3 Optim accuracy score
+op_thrs = optim_acc_score(male_model_optim,X_train_male,y_train_male)
+male_predictions = (male_model_optim.predict_proba(X_test_male)[:,1] &gt; op_thrs)*1
+
+# 6.2.1.4 Make a pd.DataFrame for submission
+male_submission = pd.concat([PassengerId_male,pd.Series(male_predictions)],axis=1)
+male_submission.columns = [&#39;PassengerId&#39;,&#39;Survived&#39;]</code></pre>
+</div>
+</div>
+<div id="create-submission" class="section level3">
+<h3>6.3 Create Submission</h3>
+<pre class="python"><code>submission = pd.concat([female_submission,male_submission,dataset_wcg]).sort_index()
+submission[&#39;Survived&#39;] = submission[&#39;Survived&#39;].astype(int)
+submission.sort_values([&#39;PassengerId&#39;],inplace=True)
+submission.to_csv(&#39;submission.csv&#39;,index=False)</code></pre>
+</div>
+<div id="conclusion" class="section level3">
+<h3>6.4 Conclusion</h3>
+<p>This notebook demonstrated (see ROC curves) that <strong>lightgbm</strong> does not make a better job than WCG for predict women and adults male survivals.</p>
+<p>I think the reasons are:
+- Pclass, Age, Fare do not provide any explanatory power to the model.
+- Survive to the disaster is a question of luck in the majority of the time.
+- Ensemble methods such as <strong>Lightgbm</strong> works better under large datasets.</p>
+<p>In other posts (like <a href="https://www.kaggle.com/cdeotte/titanic-wcg-xgboost-0-84688">this</a>) has been demonstrated that XGBoost jointly with a better separation of the dataset can achieve until 85% on the LB, so it is an excellent option to keep these posts in mind as well.</p>
+<p><img src="https://raw.githubusercontent.com/csaybar/Titanic/master/my_position.png" /></p>
+</div>
+</div>

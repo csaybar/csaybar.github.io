@@ -1,0 +1,217 @@
+---
+title: "Download the GLC30 product for Peru and Ecuador"
+author: "Cesar Aybar"
+date: "2019-10-10"
+banner: "img/banners/banner-1.jpg"
+tags: ["Google Earth Engine", "python", "folium"]
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+<center>
+<a href="https://colab.research.google.com/github/csaybar/EEwPython/blob/master/GLC30.ipynb"><img align="left" src="https://colab.research.google.com/assets/colab-badge.svg" alt="Reproducible Example here" title="Open and Execute in Google Colaboratory"></a>
+</center>
+
+<br>
+
+Land Cover information is fundamental for environmental change studies, land resource management, sustainable development, and many other societal benefits. In **Google Earth Engine** existing different coarse Land use/cover products (e.g. MCD12Q1-500m) that are not able to capture the most significant human impacts on land systems due to its spatial resolution. Therefore, this short post aims to introduce and explain step by step how to download the [GLC30](https://reader.elsevier.com/reader/sd/pii/S0924271614002275?token=BF89D29031101CDB800927F3DA0DA572A4BBBA74220D9178A24F13A5140E629638CFA580F464F61E1500662B55B90A76) a relative new Global Land Cover product at 30-meter spatial resolution.
+
+<center>
+<img src='http://www.globallandcover.com/home/images/vegas.jpg'>
+</center>
+
+## 1. Installing
+
+Before coding do not forget install and load the following packages and remenber that you can communicate with the bash console prepending an ! to the code. 
+
+```{python, eval=FALSE}
+!pip install geopandas #tensorflow 2.0
+!pip install earthengine-api==0.1.175 #earthengine API
+```
+
+## 2. Authentification
+
+This tutorial needs interacting with others Google services. For accomplish this task, it's necessary to authenticate (as yourself). The code below shows you how to do it.
+
+- **Google Drive**
+
+We will use Google Drive for save us results.
+
+```{python, eval = FALSE}
+from google.colab import drive
+drive.mount('/content/drive')  
+```
+
+- **Authenticate to Earth Engine**
+
+```{python, eval = FALSE}
+!earthengine authenticate 
+```
+
+
+## 3. Testing the software setup
+
+```{python}
+# Earth Engine Python API
+import ee
+ee.Initialize()
+
+import folium
+import geopandas as gpd
+
+# Define the URL format used for Earth Engine generated map tiles.
+EE_TILES = 'https://earthengine.googleapis.com/map/{mapid}/{{z}}/{{x}}/{{y}}?token={token}'
+
+print('Folium version: ' + folium.__version__)
+print('Geopandas version: ' + gpd.__version__)
+```
+
+
+## 4. Display either ee.Image or ee.Feature
+
+```{python}
+def Mapdisplay(center, dicc, Tiles="OpensTreetMap",zoom_start=10):
+    '''
+    :param center: Center of the map (Latitude and Longitude).
+    :param dicc: Earth Engine Geometries or Tiles dictionary
+    :param Tiles: Mapbox Bright,Mapbox Control Room,Stamen Terrain,Stamen Toner,stamenwatercolor,cartodbpositron.
+    :zoom_start: Initial zoom level for the map.
+    :return: A folium.Map object.
+    '''
+    mapViz = folium.Map(location=center,tiles=Tiles, zoom_start=zoom_start)
+    for k,v in dicc.items():
+      if ee.image.Image in [type(x) for x in v.values()]:
+        folium.TileLayer(
+            tiles = EE_TILES.format(**v),
+            attr  = 'Google Earth Engine',
+            overlay =True,
+            name  = k
+          ).add_to(mapViz)
+      else:
+        folium.GeoJson(
+        data = v,
+        name = k
+          ).add_to(mapViz)
+    mapViz.add_child(folium.LayerControl())
+    return mapViz
+```
+
+## 5. Preparing Geometry Data (Geopandas to EE)
+
+```{python}
+#download the geometry 
+import urllib
+url = 'https://github.com/csaybar/csaybar.github.io/raw/master/data/provinces.geojson'
+urllib.request.urlretrieve(url, 'Peru.geojson')
+```
+
+```{python}
+# Reading the file
+peruprov = gpd.read_file('Peru.geojson')
+lima = peruprov[peruprov.NOMBRE == 'LIMA'].to_json() # Selecting Lima
+lima_coords = eval(lima)['features'][0]['geometry']['coordinates'][0] #getting just the coordinates
+
+# ee.Geometry -> ee.Feature -> ee.FeatureCollection
+eeLima = ee.FeatureCollection([ee.Feature(ee.Geometry.Polygon(lima_coords),{'Name':'Lima'})])
+```
+
+```{python}
+# display the geometry using folium
+center_lima = eeLima.geometry().centroid().getInfo()['coordinates']
+center_lima.reverse()
+
+fig =eeLima.draw(**{'color': 'FF0000', 'strokeWidth': 5}).getMapId()
+Mapdisplay(center_lima,{'Lima':fig})
+```
+
+<center>
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/vector.png'>
+</center>
+
+## 6. Reading and clipping the GLC30 dataset
+
+```{python}
+# Remove 0 and 255 values (no data)
+def removevalues(img):
+  value_0 = img.neq(0)
+  value_255 = img.neq(255)
+  return img.updateMask(value_0).updateMask(value_255).divide(10).int()
+
+# Define a palette for the distinct land cover classes.
+glc30Palette = [
+  'ff02d0', # 1-Cultaved Lands
+  '147749', # 2-Forest    
+  'a9d05f', # 3-Grassland  
+  '3eb370', # 4-Shrublands
+  '7ecef4', # 5-Wetlands
+  '00569a', # 6-Water bodies          
+  '6f6f6f',  # 7-Tundra
+  '911818', # 8-Artificial Surfaces
+  'cacaca', # 9-Bareland    
+  'f9f3c1', # 10-Permanent snow and ice  
+]
+
+# Load the dataset
+glc30_lima = ee.ImageCollection('users/csaybar/GLC30PERU')\
+               .map(removevalues).max().clip(eeLima)
+
+vizparams = {'min':1,'max':10,'palette':glc30Palette}
+```
+
+<center>
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse.png'>
+</center>
+
+```{python}
+# Ecuador 
+Ecuador = ee.Geometry.Polygon([[-79.25,0.10],[-79.25,0.47],[-79.76,0.47],[-79.76,0.10], [-79.25,0.10]])
+center_ecu = Ecuador.centroid().getInfo()['coordinates']
+center_ecu.reverse()
+# Load the dataset
+glc30_ecuador = ee.ImageCollection('users/csaybar/GLC30PERU')\
+               .map(removevalues).max().clip(Ecuador)
+
+vizparams = {'min':1,'max':10,'palette':glc30Palette}
+Mapdisplay(center_ecu,{'glc30':glc30_ecuador.getMapId(vizparams)},zoom_start=10)
+```
+
+<center>
+<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse_01_ecuador.jpg'>
+</center>
+
+## 7. Export the results of EE to Google Drive
+
+```{python}
+# Export the image, specifying scale and region.
+task = ee.batch.Export.image.toDrive(**{
+    'image': glc30,
+    'description': 'GLC30LIMA',
+    'folder':'GLC30',
+    'scale': 30,
+    'region': eeLima.geometry().getInfo()['coordinates']
+})
+task.start()
+```
+
+Monitoring your Export
+
+```{python}
+import time 
+while task.active():
+  print('Polling for task (id: {}).'.format(task.id))
+  time.sleep(5)
+```
+
+
+```{python}
+# Export the image, specifying scale and region.
+task = ee.batch.Export.image.toDrive(**{
+    'image': glc30,
+    'description': 'GLC30ECUADOR',
+    'folder':'GLC30',
+    'scale': 30,
+    'region': Ecuador.getInfo()['coordinates']
+})
+task.start()
+```
