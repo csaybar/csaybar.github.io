@@ -1,47 +1,133 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Algorithms &amp; Maps</title>
+    <title>csaybar</title>
     <link>/</link>
-    <description>Recent content on Algorithms &amp; Maps</description>
+    <description>Recent content on csaybar</description>
     <generator>Hugo -- gohugo.io</generator>
-    <managingEditor>csaybar@gmail.com (Cesar Aybar)</managingEditor>
-    <webMaster>csaybar@gmail.com (Cesar Aybar)</webMaster>
-    <lastBuildDate>Wed, 05 Dec 2018 00:00:00 +0000</lastBuildDate>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 10 Oct 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>Download the GLC30 product for Peru and Ecuador</title>
+      <link>/blog/2019/10/10/landuseperu/</link>
+      <pubDate>Thu, 10 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2019/10/10/landuseperu/</guid>
+      <description>Land Cover information is fundamental for environmental change studies, land resource management, sustainable development, and many other societal benefits. In Google Earth Engine existing different coarse Land use/cover products (e.g. MCD12Q1-500m) that are not able to capture the most significant human impacts on land systems due to its spatial resolution. Therefore, this short post aims to introduce and explain step by step how to download the GLC30 a relative new Global Land Cover product at 30-meter spatial resolution.</description>
+    </item>
+    
+    <item>
+      <title>Integrating Earth Engine with Tensorflow II - U-Net</title>
+      <link>/blog/2019/06/21/eetf2/</link>
+      <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2019/06/21/eetf2/</guid>
+      <description>This notebook has been inspired by the Chris Brown &amp;amp; Nick Clinton EarthEngine + Tensorflow presentation. It shows the step by step how to integrate Google Earth Engine and TensorFlow 2.0 in the same pipeline (EE-&amp;gt;Tensorflow-&amp;gt;EE).
+  OBS: I will assume reader are already familiar with the basic concepts of Machine Learning and Convolutional Networks. If it is doesn’t, I firstly highly recommend taking the deep learning coursera specialization available here.</description>
+    </item>
+    
+    <item>
+      <title>Integrating Earth Engine with Tensorflow I - DNN</title>
+      <link>/blog/2019/05/30/eetf/</link>
+      <pubDate>Thu, 30 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2019/05/30/eetf/</guid>
+      <description>This notebook has been inspired by the Chris Brown &amp;amp; Nick Clinton EarthEngine + Tensorflow presentation. It shows the step by step how to integrate Google Earth Engine and TensorFlow 2.0 in the same pipeline (EE-&amp;gt;Tensorflow-&amp;gt;EE).
+  Topics Create a training/testing dataset (in a TFRecord format) using Earth Engine. Create functions for parse data (TFRecord -&amp;gt; tf.</description>
+    </item>
+    
+    <item>
+      <title>Head Start Data Science I: Titanic Challenge</title>
+      <link>/blog/2019/05/19/titanic/</link>
+      <pubDate>Sun, 19 May 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2019/05/19/titanic/</guid>
+      <description>1. Introduction The Titanic challenge is an excellent way to practice the necessary skills required for ML. In my first attempts, I blindly applied a well-known ML method (Lightgbm); however, I couldn’t go up over the Top 20% :(. To have success in this competition you need to realize an acute feature engineering that takes into account the distribution on train and test dataset. This post is the perfect opportunity to share with you my Python package preml and show how can you BEAT THE 97% OF LB.</description>
+    </item>
+    
+    <item>
+      <title>How to create 3D Interactive choropleth map in R</title>
+      <link>/blog/2019/01/12/plotlyformaps_i/</link>
+      <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2019/01/12/plotlyformaps_i/</guid>
+      <description>1. Introduction A Choropleth map is a thematic map in which areas are colored considering the quantitative measurement of a variable, such as population density or gross domestic product.
+There are a lot of libraries in R (and of course in Python too) that perform it efficiently. However, I feel that ggplot2 offers the fastest and most friendly way. Don’t you believe me? Look at this.</description>
+    </item>
+    
+    <item>
       <title>Raster resampling in R</title>
-      <link>/post/resample/</link>
+      <link>/blog/2018/12/05/resample/</link>
       <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/post/resample/</guid>
-      <description>1. Intro A typical workflow for earth analysts always will have to do with several spatial data sources (e.g. Sentinel, MODIS and Landsat) each one with a particular extent and pixel resolution. Resampling is the technique used to homogenize these spatial attributes.
+      
+      <guid>/blog/2018/12/05/resample/</guid>
+      <description>1. Introduction A typical workflow for earth analysts always will have to do with several spatial data sources (e.g. Sentinel, MODIS and Landsat) each one with a particular extent and pixel resolution. Resampling is the technique used to homogenize these spatial attributes.
 Image obtained from here
- This post demonstrate how easy and incredibly fast is resampling gridded data in R using the raster and gdalUtils packages. If you do not familiarize with they , first, look at this tutorial or run in R:</description>
+ This post demonstrates how easy and incredibly fast is resampling gridded data in R using either the raster and gdalUtils packages.</description>
     </item>
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/post/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/post/2015-07-23-r-rmarkdown/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
-    </item>
-    
-    <item>
-      <title>About me</title>
-      <link>/page/about/</link>
+      <title>Contact</title>
+      <link>/contact/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <author>csaybar@gmail.com (Cesar Aybar)</author>
-      <guid>/page/about/</guid>
-      <description>Looking back ~5 years ago, there was one thing which diversified my thoughts and changes the course of my career: Discover Linux and installs Debian Wheezy on my old computer (a Pentium 4). After that one thing led to another.
-I am passionate about data that nowadays works at SENAMHI solving complex problems, always in the best possible way. When I&amp;rsquo;m not in the office coding or writing reports. I am playing the violin (although without much success … for now!</description>
+      
+      <guid>/contact/</guid>
+      <description>How can I help you? Thank you for visiting my site. Please feel free to contact me. I am always interested in making academic and outreach collaborations.</description>
+    </item>
+    
+    <item>
+      <title>FAQ</title>
+      <link>/faq/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/faq/</guid>
+      <description>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.
+1. WHAT TO DO IF I HAVE STILL NOT RECEIVED THE ORDER? Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante.</description>
+    </item>
+    
+    <item>
+      <title>Publications</title>
+      <link>/publications/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/publications/</guid>
+      <description>Complete list of publications on Google Scholar
+Book  Andrade, M.F., Moreno, I., Calle, J.M., Ticona, L., Blacutt, L., Lavado-Casimiro, W., Sabino, E., Huerta, A., Aybar, C., Hunziker, S. and Brönnimann, S., 2018. Climate and extreme events from the Central Altiplano of Peru and Bolivia.  Refereed Journal Articles  Aybar, C., Fernández, C., Huerta, A., Lavado, W., Vega, F., &amp;amp; Felipe-Obando, O. (2019). Construction of a high-resolution gridded rainfall dataset for Peru from 1981 to the present day.</description>
+    </item>
+    
+    <item>
+      <title>Research</title>
+      <link>/research/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/research/</guid>
+      <description>Construction of a high-resolution gridded rainfall dataset for Peru from 1981 to the present day A new gridded rainfall dataset available for Peru is introduced, called PISCOp V2.1 (Peruvian Interpolated data of SENAMHI’s Climatological and Hydrological Observations). PISCOp has been developed for the period 1981 to the present, with an average latency of eight weeks at 0.1° spatial resolution. The merging algorithm is based on geostatistical and deterministic interpolation methods including three different rainfall sources: (i) the national quality-controlled and infilled raingauge dataset, (ii) radar-gauge merged precipitation climatologies and (iii) the Climate Hazards Group Infrared Precipitation (CHIRP) estimates.</description>
+    </item>
+    
+    <item>
+      <title>Software</title>
+      <link>/software/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/software/</guid>
+      <description>Google Earth Engine for R Google Earth Engine is a cloud-based platform that allows users getting access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google’s infrastructure. The rgee package provides full access to the Google Earth Engine API from within R and defines additional tools for automating processes...
+Continue reading
+     DeforestGAN: Quasi-real-time vegetation maps DeforestGAN uses a conditional adversary generative neural network to simulate NDVI values from SENTINEL-1 radar images.</description>
+    </item>
+    
+    <item>
+      <title>Teaching</title>
+      <link>/teaching/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/teaching/</guid>
+      <description>Teaching material   [SPA] Conference at MASTERGIS   Use of Google Earth Engine, Tensorflow and neural networks in Remote Sensing.    
+Courses at undergraduate level  
+University of San Marcos, Peru Introduction to computer science and algorithms, 2018 Tutor  Based on the Khan Academy algorithm course  and Thomas H. Cormen book, this course introduces students searching, sorting, and recursion algorithms using Python. Material with respect to visualizations and coding challenges were added.</description>
     </item>
     
   </channel>
