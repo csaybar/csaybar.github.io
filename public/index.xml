@@ -105,7 +105,7 @@ Book  Andrade, M.F., Moreno, I., Calle, J.M., Ticona, L., Blacutt, L., Lavado-Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/research/</guid>
-      <description>Construction of a high-resolution gridded rainfall dataset for Peru from 1981 to the present day A new gridded rainfall dataset available for Peru is introduced, called PISCOp V2.1 (Peruvian Interpolated data of SENAMHI’s Climatological and Hydrological Observations). PISCOp has been developed for the period 1981 to the present, with an average latency of eight weeks at 0.1° spatial resolution. The merging algorithm is based on geostatistical and deterministic interpolation methods including three different rainfall sources: (i) the national quality-controlled and infilled raingauge dataset, (ii) radar-gauge merged precipitation climatologies and (iii) the Climate Hazards Group Infrared Precipitation (CHIRP) estimates.</description>
+      <description></description>
     </item>
     
     <item>
@@ -114,9 +114,7 @@ Book  Andrade, M.F., Moreno, I., Calle, J.M., Ticona, L., Blacutt, L., Lavado-Ca
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/software/</guid>
-      <description>Google Earth Engine for R Google Earth Engine is a cloud-based platform that allows users getting access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google’s infrastructure. The rgee package provides full access to the Google Earth Engine API from within R and defines additional tools for automating processes...
-Continue reading
-     DeforestGAN: Quasi-real-time vegetation maps DeforestGAN uses a conditional adversary generative neural network to simulate NDVI values from SENTINEL-1 radar images.</description>
+      <description></description>
     </item>
     
     <item>
@@ -125,9 +123,7 @@ Continue reading
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/teaching/</guid>
-      <description>Teaching material   [SPA] Conference at MASTERGIS   Use of Google Earth Engine, Tensorflow and neural networks in Remote Sensing.    
-Courses at undergraduate level  
-University of San Marcos, Peru Introduction to computer science and algorithms, 2018 Tutor  Based on the Khan Academy algorithm course  and Thomas H. Cormen book, this course introduces students searching, sorting, and recursion algorithms using Python. Material with respect to visualizations and coding challenges were added.</description>
+      <description>The course EEwPython is a series of Jupyter notebook (colab) to learn Google Earth Engine (GEE) with python. EEwPython is structured in two parts. The first one is an adaptation from all Google Earth Engine Documentation to be able to run in python, and the second one is a recompilation of different reproducible examples. If you want to contribute with EEwPython, do not doubt to keep in touch with us. All the material is released under the Apache 2.</description>
     </item>
     
   </channel>

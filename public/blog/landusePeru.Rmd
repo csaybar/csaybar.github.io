@@ -79,11 +79,12 @@ def Mapdisplay(center, dicc, Tiles="OpensTreetMap",zoom_start=10):
     :zoom_start: Initial zoom level for the map.
     :return: A folium.Map object.
     '''
+    center = center[::-1]
     mapViz = folium.Map(location=center,tiles=Tiles, zoom_start=zoom_start)
     for k,v in dicc.items():
       if ee.image.Image in [type(x) for x in v.values()]:
         folium.TileLayer(
-            tiles = EE_TILES.format(**v),
+            tiles = v["tile_fetcher"].url_format,
             attr  = 'Google Earth Engine',
             overlay =True,
             name  = k
@@ -126,7 +127,7 @@ Mapdisplay(center_lima,{'Lima':fig})
 ```
 
 <center>
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/vector.png'>
+<img src='https://user-images.githubusercontent.com/16768318/73024516-9d2e7100-3e25-11ea-8d2b-2e17ca61c77d.png' width="90%">
 </center>
 
 ## 6. Reading and clipping the GLC30 dataset
@@ -160,7 +161,7 @@ vizparams = {'min':1,'max':10,'palette':glc30Palette}
 ```
 
 <center>
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse.png'>
+<img src='https://user-images.githubusercontent.com/16768318/73024489-9a338080-3e25-11ea-84d7-3dd6c31a9744.png' width='90%'>
 </center>
 
 ```{python}
@@ -177,7 +178,7 @@ Mapdisplay(center_ecu,{'glc30':glc30_ecuador.getMapId(vizparams)},zoom_start=10)
 ```
 
 <center>
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse_01_ecuador.jpg'>
+<img src='https://user-images.githubusercontent.com/16768318/73024490-9a338080-3e25-11ea-98e0-82ca11446130.jpg' width='90%'>
 </center>
 
 ## 7. Export the results of EE to Google Drive

@@ -105,7 +105,7 @@ The five step could be  a little intimidating, but don't worry about it!. **tf.k
 Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more critical in rural areas where the contribution of GDP increase until 50%. In terms of people, this activity act for the primary source of income for 2.3 million families, representing 34% of Peruvian households. Despite agriculture importance in Peruvian family lives, today no exist a cropping system either at a national or regional scale that monitoring the extension, state, or crop type. Considering this problematic, in this section **you** will create a straightforward methodology to **predict the crop area** in Camana (Arequipa) Valley using the CNN above described.
 
 <center>
-<img src='https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg'>
+<img src='https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg' width=75%>
 </center>
 
 ```{python}
@@ -200,7 +200,7 @@ Mapdisplay(center,{'Camana Valley':Camana_valley.getInfo()},zoom_start=12)
 ```
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_01.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024505-9bfd4400-3e25-11ea-9f7b-cdc24a37d1e2.png" width='90%'>
 </center>  
 
 
@@ -233,7 +233,7 @@ Mapdisplay(center,dicc,zoom_start=8)
 ```
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_02.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024506-9bfd4400-3e25-11ea-88b8-c96d2591559d.png" width='90%'>
 </center>  
 
 For train the model, unlike the [first post](https://csaybar.github.io/post/eetf/), you will use the **Cultivated Lands class (raster)**  of the  [GLC30](https://www.sciencedirect.com/science/article/pii/S0924271614002275), it is a relative new Global Land Cover product at 30-meter spatial resolution.
@@ -257,7 +257,7 @@ Mapdisplay(center,dicc,zoom_start=8)
 
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_03.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024507-9bfd4400-3e25-11ea-92ef-9c044062b82c.png"  width='90%'>
 </center>  
 
 At this part, you will obtain the input data for mapping the **Camana crop area** from  [Landsat ETM sensor (L5)](https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR). GEE provides L5 images with radiometric and geometry correction. Additionally, **cloud mask information** is supplied employing the bit image `pixel_qa`. The following function allows putting NA to the TOA reflectance values of clouds.
@@ -341,14 +341,14 @@ Mapdisplay(center,dicc,zoom_start=8)
 
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_04.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024508-9bfd4400-3e25-11ea-8430-16e72cc97c84.png"  width='90%'>
 </center>  
 
 
 The key to success for integrating GEE with a CNN pipeline is the **ee.Image.neighborhoodToArray** function. It turns the neighborhood of each pixel in a scalar image into a 2D array (see image below). Axes 0 and 1 of the output array correspond to Y and X axes of the image, respectively. The output image will have as many bands as the input; each output band has the same mask as the corresponding input band. The footprint and metadata of the input image are preserved.
 
 <center>
-<img src = "https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/neighborhoodToArray.png">
+<img src = "https://user-images.githubusercontent.com/16768318/73024492-9a338080-3e25-11ea-8728-4f7467de1740.png">
 </center>
 
 There are several restrictions about the max number of features that a [table can save](https://developers.google.com/earth-engine/exporting#exporting-tables-and-vector-data) (~ 10 M). For this reason, the **saveCNN_batch** function is created as below:
@@ -548,7 +548,7 @@ plt.show()
 ```
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_05.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024509-9c95da80-3e25-11ea-8c6d-31419bd12ee9.png">
 </center>  
 
 ### 4.7 Set up
@@ -644,7 +644,7 @@ model.summary()
 ```
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_06.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024511-9c95da80-3e25-11ea-87b1-c654bf5313c0.png">
 </center>
 
 ### 4.10. Defining custom metrics and loss functions
@@ -778,7 +778,7 @@ Mapdisplay(center,{'l5id':l5id},zoom_start=11)
 ```
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_08.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024514-9c95da80-3e25-11ea-900a-204446ed0f88.png"  width='90%'>
 </center>
 
 For export the results to the Google Cloud Storage, it's preferred defines the following `formatOptions` parameters to save memory:
@@ -958,7 +958,7 @@ Mapdisplay(center=center,dicc=dicc,zoom_start=13)
 ```
 
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_09.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024515-9c95da80-3e25-11ea-8de4-a7f5d63b75dc.png"  width='90%'>
 </center>
 
 ### That's all for this time!, the next post is about sequential models and Earth Engine.

@@ -18,7 +18,7 @@
   
   <meta name="description" content="Site template made by devcows using hugo">
 
-  <meta name="generator" content="Hugo 0.59.1" />
+  <meta name="generator" content="Hugo 0.61.0" />
 
   
   <link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css">
@@ -328,7 +328,7 @@ Inside the U-Net architecture exist two contrasting parts (see image below). The
 <h2>4. Crop Area estimation in Camana Valley (DEMO)</h2>
 <p>Agriculture is part of the backbone Peruvian economy, contributing about 7.6% of the Gross Domestic Product (GDP), being more critical in rural areas where the contribution of GDP increase until 50%. In terms of people, this activity act for the primary source of income for 2.3 million families, representing 34% of Peruvian households. Despite agriculture importance in Peruvian family lives, today no exist a cropping system either at a national or regional scale that monitoring the extension, state, or crop type. Considering this problematic, in this section <strong>you</strong> will create a straightforward methodology to <strong>predict the crop area</strong> in Camana (Arequipa) Valley using the CNN above described.</p>
 <center>
-<img src='https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg'>
+<img src='https://st.depositphotos.com/1171712/3974/i/950/depositphotos_39741899-stock-photo-camana-valley.jpg' width=75%>
 </center>
 <pre class="python"><code>#Mapdisplay: Display ee.Features and ee.Images using folium.
 
@@ -406,7 +406,7 @@ center = Camana_valley.centroid().getInfo()[&#39;coordinates&#39;]
 center.reverse()
 Mapdisplay(center,{&#39;Camana Valley&#39;:Camana_valley.getInfo()},zoom_start=12)</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_01.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024505-9bfd4400-3e25-11ea-9f7b-cdc24a37d1e2.png" width='90%'>
 </center>
 <p>Next, you will read and create a visualization of the train/test dataset. I’ve already generated some points with the label agriculture/non-agriculture.</p>
 <ul>
@@ -437,7 +437,7 @@ dicc = {&#39;train&#39;: train_agriculture.draw(**{&#39;color&#39;: &#39;FF0000&
 
 Mapdisplay(center,dicc,zoom_start=8)</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_02.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024506-9bfd4400-3e25-11ea-88b8-c96d2591559d.png" width='90%'>
 </center>
 <p>For train the model, unlike the <a href="https://csaybar.github.io/post/eetf/">first post</a>, you will use the <strong>Cultivated Lands class (raster)</strong> of the <a href="https://www.sciencedirect.com/science/article/pii/S0924271614002275">GLC30</a>, it is a relative new Global Land Cover product at 30-meter spatial resolution.</p>
 <pre class="python"><code>from collections import OrderedDict
@@ -455,7 +455,7 @@ dicc = OrderedDict((k, dicc[k]) for k in key_order)
 
 Mapdisplay(center,dicc,zoom_start=8)</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_03.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024507-9bfd4400-3e25-11ea-92ef-9c044062b82c.png"  width='90%'>
 </center>
 <p>At this part, you will obtain the input data for mapping the <strong>Camana crop area</strong> from <a href="https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C01_T1_SR">Landsat ETM sensor (L5)</a>. GEE provides L5 images with radiometric and geometry correction. Additionally, <strong>cloud mask information</strong> is supplied employing the bit image <code>pixel_qa</code>. The following function allows putting NA to the TOA reflectance values of clouds.</p>
 <pre class="python"><code>def maskS2clouds(img):
@@ -520,11 +520,11 @@ dicc = OrderedDict((k, dicc[k]) for k in key_order)
 
 Mapdisplay(center,dicc,zoom_start=8)</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_04.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024508-9bfd4400-3e25-11ea-8430-16e72cc97c84.png"  width='90%'>
 </center>
 <p>The key to success for integrating GEE with a CNN pipeline is the <strong>ee.Image.neighborhoodToArray</strong> function. It turns the neighborhood of each pixel in a scalar image into a 2D array (see image below). Axes 0 and 1 of the output array correspond to Y and X axes of the image, respectively. The output image will have as many bands as the input; each output band has the same mask as the corresponding input band. The footprint and metadata of the input image are preserved.</p>
 <center>
-<img src = "https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/neighborhoodToArray.png">
+<img src = "https://user-images.githubusercontent.com/16768318/73024492-9a338080-3e25-11ea-8728-4f7467de1740.png">
 </center>
 <p>There are several restrictions about the max number of features that a <a href="https://developers.google.com/earth-engine/exporting#exporting-tables-and-vector-data">table can save</a> (~ 10 M). For this reason, the <strong>saveCNN_batch</strong> function is created as below:</p>
 <pre class="python"><code>import numpy as np
@@ -702,7 +702,7 @@ for i in range(1, display_num):
   c+=2 
 plt.show()</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_05.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024509-9c95da80-3e25-11ea-8c6d-31419bd12ee9.png">
 </center>
 </div>
 <div id="set-up" class="section level3">
@@ -785,7 +785,7 @@ outputs = layers.Conv2D(1, (1, 1), activation=&#39;sigmoid&#39;)(decoder0)</code
 model = models.Model(inputs=[inputs], outputs=[outputs])
 model.summary()</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_06.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024511-9c95da80-3e25-11ea-87b1-c654bf5313c0.png">
 </center>
 </div>
 <div id="defining-custom-metrics-and-loss-functions" class="section level3">
@@ -880,7 +880,7 @@ center = Camana_valley.centroid().getInfo()[&#39;coordinates&#39;]
 center.reverse()
 Mapdisplay(center,{&#39;l5id&#39;:l5id},zoom_start=11)</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_08.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024514-9c95da80-3e25-11ea-900a-204446ed0f88.png"  width='90%'>
 </center>
 <p>For export the results to the Google Cloud Storage, it’s preferred defines the following <code>formatOptions</code> parameters to save memory:</p>
 <ul>
@@ -1017,7 +1017,7 @@ center.reverse()
 
 Mapdisplay(center=center,dicc=dicc,zoom_start=13)</code></pre>
 <center>
-<img src="https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/unet_09.png">
+<img src="https://user-images.githubusercontent.com/16768318/73024515-9c95da80-3e25-11ea-8de4-a7f5d63b75dc.png"  width='90%'>
 </center>
 </div>
 <div id="thats-all-for-this-time-the-next-post-is-about-sequential-models-and-earth-engine." class="section level3">
@@ -1207,8 +1207,7 @@ Mapdisplay(center=center,dicc=dicc,zoom_start=13)</code></pre>
         <div class="col-md-4 col-sm-6">
             <h4>About Me</h4>
 
-            <p><p><ul><li>- I have been using Debian OS for 7 years.</li><li>- Brave is my default web browser.</li><li>- I like to watch 90&rsquo;s animes.</li><li>- I like go to camp.</li><li> - I like to cook typical Peruvian food :3.</li><li>- My preferred book is &lsquo;deep learning&rsquo; written by Ian Goodfellow.</ul></p>
-
+            <!-- raw HTML omitted -->
 
             <hr class="hidden-md hidden-lg hidden-sm">
 
@@ -1275,14 +1274,7 @@ Mapdisplay(center=center,dicc=dicc,zoom_start=13)</code></pre>
 
           <h4>Contact</h4>
 
-            <strong>Lima</strong>
-        <br>Ciudad Universitaria
-        <br>Cercado de Lima 
-        <br>15081
-        <br>
-        <strong>Peru</strong>
-        <br>
-        <br>
+            <!-- raw HTML omitted -->
 
             <a href="/contact" class="btn btn-small btn-template-main">Go to contact page</a>
 

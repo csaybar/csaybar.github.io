@@ -60,7 +60,7 @@ One more thing!, it's possible to run the Earth Engine Python API in a cloud env
 ## 3.  Deep Neural Network (DNN)
 
 <center>
-<image src="https://www.electronicdesign.com/sites/electronicdesign.com/files/MachineLearning_WTD_Fig3.png">
+<img src='https://user-images.githubusercontent.com/16768318/73028226-02399500-3e2d-11ea-85ea-0ea9998d8379.png' width=70%>
 </center>
   
 A DNN is simply a neural network with more than two layers. The main steps for building a DNN are:
@@ -478,7 +478,7 @@ Starts tensorboard!
 %tensorboard --logdir logs
 ```
 
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/tensorboard.png'>
+<img src='https://user-images.githubusercontent.com/16768318/73024504-9bfd4400-3e25-11ea-9385-4ac7d2741434.png' width='90%'>
 
 ```{python}
 model.load_weights("best_model.h5")

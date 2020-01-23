@@ -61,11 +61,12 @@ print(&#39;Geopandas version: &#39; + gpd.__version__)</code></pre>
     :zoom_start: Initial zoom level for the map.
     :return: A folium.Map object.
     &#39;&#39;&#39;
+    center = center[::-1]
     mapViz = folium.Map(location=center,tiles=Tiles, zoom_start=zoom_start)
     for k,v in dicc.items():
       if ee.image.Image in [type(x) for x in v.values()]:
         folium.TileLayer(
-            tiles = EE_TILES.format(**v),
+            tiles = v[&quot;tile_fetcher&quot;].url_format,
             attr  = &#39;Google Earth Engine&#39;,
             overlay =True,
             name  = k
@@ -98,7 +99,7 @@ center_lima.reverse()
 fig =eeLima.draw(**{&#39;color&#39;: &#39;FF0000&#39;, &#39;strokeWidth&#39;: 5}).getMapId()
 Mapdisplay(center_lima,{&#39;Lima&#39;:fig})</code></pre>
 <center>
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/vector.png'>
+<img src='https://user-images.githubusercontent.com/16768318/73024516-9d2e7100-3e25-11ea-8d2b-2e17ca61c77d.png' width="90%">
 </center>
 </div>
 <div id="reading-and-clipping-the-glc30-dataset" class="section level2">
@@ -129,7 +130,7 @@ glc30_lima = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
 
 vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}</code></pre>
 <center>
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse.png'>
+<img src='https://user-images.githubusercontent.com/16768318/73024489-9a338080-3e25-11ea-84d7-3dd6c31a9744.png' width='90%'>
 </center>
 <pre class="python"><code># Ecuador 
 Ecuador = ee.Geometry.Polygon([[-79.25,0.10],[-79.25,0.47],[-79.76,0.47],[-79.76,0.10], [-79.25,0.10]])
@@ -142,7 +143,7 @@ glc30_ecuador = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
 vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}
 Mapdisplay(center_ecu,{&#39;glc30&#39;:glc30_ecuador.getMapId(vizparams)},zoom_start=10)</code></pre>
 <center>
-<img src='https://raw.githubusercontent.com/csaybar/csaybar.github.io/master/img/landuse_01_ecuador.jpg'>
+<img src='https://user-images.githubusercontent.com/16768318/73024490-9a338080-3e25-11ea-98e0-82ca11446130.jpg' width='90%'>
 </center>
 </div>
 <div id="export-the-results-of-ee-to-google-drive" class="section level2">
