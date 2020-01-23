@@ -1,9 +1,0 @@
----
-title: "Raster resampling in R"
-author: "Cesar Aybar"
-date: '2018-12-05'
-tags: ["GdalUtils", "raster", "furrr", "plotly","rasterVIS"]
----
-
-## 1. Intro
-A typical workflow for earth analysts always will have to do with 

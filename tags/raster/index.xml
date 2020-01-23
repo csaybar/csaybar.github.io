@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>raster on csaybar</title>
+    <link>/tags/raster/</link>
+    <description>Recent content in raster on csaybar</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 05 Dec 2018 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/raster/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Raster resampling in R</title>
+      <link>/blog/2018/12/05/resample/</link>
+      <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2018/12/05/resample/</guid>
+      <description>1. Introduction A typical workflow for earth analysts always will have to do with several spatial data sources (e.g. Sentinel, MODIS and Landsat) each one with a particular extent and pixel resolution. Resampling is the technique used to homogenize these spatial attributes.
+Image obtained from here
+ This post demonstrates how easy and incredibly fast is resampling gridded data in R using either the raster and gdalUtils packages.</description>
+    </item>
+    
+  </channel>
+</rss>
