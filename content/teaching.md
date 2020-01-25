@@ -1,5 +1,5 @@
 ---
-title: Teaching
+title: "Teaching"
 ---
 
 <div class="container">
@@ -55,7 +55,7 @@ This course provides students with a background in statistics to enable to under
 <br>
 <h4>EEwPython</h4>
 
-<img src="/./teaching_files/earth-engine-logo.png" alt="https://github.com/csaybar/EEwPython" width="10%" height="10%" align="right"/>
+<img src="https://user-images.githubusercontent.com/16768318/73115236-1cea3780-3f1b-11ea-8a98-f74688389108.png" alt="https://github.com/csaybar/EEwPython" width="10%" height="10%" align="right"/>
 
 The course [**EEwPython**](https://github.com/csaybar/EEwPython) is a series of Jupyter notebook (colab) to learn Google Earth Engine (GEE) with python. [**EEwPython**](https://github.com/csaybar/EEwPython) is structured in two parts. The first one is an adaptation from all **Google Earth Engine Documentation** to be able to run in python, and the second one is a recompilation of different reproducible examples. If you want to contribute with EEwPython, do not doubt to keep in touch with us. All the material is released under the Apache 2.0 license.
 
@@ -75,7 +75,7 @@ The following topics are covered:
 - **2. Improving Deep Neural Networks Hyperparameter tuning, Regularization and Optimization:** This course will teach you the “magic” of getting deep learning to work well. Rather than the deep learning process being a black box, you will understand what drives performance, and be able to more systematically get good results. You will also learn TensorFlow. When you finish this Colabs, you will:
 
   - Understand industry best-practices for building deep learning applications.
-  <img src="/./teaching_files/deeplearning.png" alt="https://github.com/csaybar/EEwPython" width="20%" height="20%" align="right"/>
+  <img src="https://user-images.githubusercontent.com/16768318/73115235-1cea3780-3f1b-11ea-88b2-1927a1885ba9.png" alt="https://github.com/csaybar/EEwPython" width="20%" height="20%" align="right"/>
   - Be able to effectively use the common neural network “tricks”, including initialization, L2 and dropout regularization, Batch normalization and gradient checking.
   - Be able to implement and apply a variety of optimization algorithms, such as mini-batch gradient descent, Momentum, RMSprop and Adam, and check for their convergence.
   - Understand new best-practices for the deep learning era of how to set up train/dev/test sets and analyze bias/variance.

@@ -210,7 +210,7 @@ Code snippets are text macros that are used for quickly inserting common pieces 
   **Tools -> Global Options -> Code -> Edit Snippet**
   </p>
 
-![](/blog/plotlyformaps_I_files/sni.gif){width=700px height=400px}
+![](https://user-images.githubusercontent.com/16768318/73115360-cc73d980-3f1c-11ea-9645-68756ab00870.gif){width=700px height=400px}
 
 My snippet for making 3D choropleths maps (`worldmap`) are defined below:
   
