@@ -1,0 +1,275 @@
+---
+title: "How to create 3D Interactive choropleth map in R"
+author: "Cesar Aybar"
+date: '2019-01-12'
+banner: 'img/banners/03_banner_3dmap.png'
+tags: ["plotly", "tidyverse", "rnaturalearth"]
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,message = FALSE,warning = FALSE)
+library(rnaturalearth)
+library(classInt)
+library(stringr)
+library(viridisLite)
+library(tidyverse)
+library(sf)
+library(smoothr)
+library(plotly)
+```
+
+## 1. Introduction
+
+A **Choropleth map** is a thematic map in which areas are colored considering the quantitative measurement of a variable, such as population density or gross domestic product. 
+
+There are a lot of libraries in R (and of course in Python too) that perform it efficiently. However, I feel that [**ggplot2**](https://ggplot2.tidyverse.org/) offers the fastest and most friendly way. Don't you believe me? Look at this.
+
+```{r results='hide',fig.width = 7, fig.height=3}
+geom <- st_read(system.file("shape/nc.shp", package="sf")) 
+ggplot(geom) +
+  geom_sf(aes(fill = AREA)) +
+  ggtitle('My first choropleth map') #so intuitively, right?
+```
+
+[**ggplot2**](https://ggplot2.tidyverse.org/) has a lot of tricks and well-written documentation, however, it does not support **dynamics and interactive visualization** natively. To accomplish this task, one option is changing **ggplot** by [**plotly**](https://plot.ly/javascript/), but don't worry *ggplot2* and *plotly* working very well together and are similar, because both are based on the [**grammar of graphics**](https://byrneslab.net/classes/biol607/readings/wickham_layered-grammar.pdf).
+
+
+```{r eval = TRUE, fig.width = 7, fig.height=3}
+geom <- st_read(system.file("shape/nc.shp", package="sf"),quiet = TRUE) 
+p <- ggplot(geom) +
+  geom_sf(aes(fill = AREA)) +
+  ggtitle('My first choropleth map')
+ggplotly(p)
+```
+
+In this post, I aim to show you how to construct a beautiful *3D interactive choropleth map* in just a few minutes using R.
+
+## 2. What is plotly?
+#### adapted from Carson Sievert [book](https://plotly-book.cpsievert.me/index.html)
+
+<br>
+  
+  <a href="https://www.plot.ly/javascript" target="_blank">
+  <p style="text-align:center">
+  <img src="https://raw.githubusercontent.com/cldougl/plot_images/add_r_img/plotly_2017.png" width = 70%>
+  </p>
+  </a>
+  
+  **Plotly** or [Plot.ly](https://plot.ly/), is a technical computing company that provides scientific graphing libraries for different languages. Theses libraries use as a basis [**plotly.js**](https://plot.ly/javascript/) a Javascript library building on top of [**d3.js**](https://d3js.org/) and [**stack.gl**](http://stack.gl/). In the case of R, the **plotly** library take advantage of the **htmlwidget** framework (see ```plotly::as_widget```) to create a *"connection"* with plotly.js. You can install **plotly** in R as follow:
+  
+  ```{r eval = FALSE, echo = TRUE}
+devtools::install_github("ropensci/plotly")
+```
+
+## 4. Simple features (sf) in plotly
+
+In a nutshell, there are four ways to create geospatial visualization from a sf object.
+
+- **plot_ly( ):** Is the main function that pass R objects (list) to **plotly.js**.
+
+- **ggplotly( ):** This function converts a `ggplot2::ggplot()` object to a plotly object. Does not support orthographic (3D) projections.
+
+- **plot_mapbox( ):** It is similar to use `plot_ly(type = 'scattermapbox')`, allow customization of basemaps.
+
+- **plot_geo( ):** It is similar to use `plot_ly(type = 'scattergeo')`. 
+
+If you are trying to visualize a plot with a lot of graphical elements to render, I highly recommend use **plot_ly** instead of **ggplotly**. plot_ly is the most stable procedure to leverage your plot to the plotly.js API. For a large explanation about the strengths and weaknesses of referred functions read this section of the plotly [ebook](https://plotly-book.cpsievert.me/maps.html). 
+
+## 4. Creating a population choropleth map using the Natural Earth Dataset
+
+### 4.1 Libraries
+
+```{r}
+library("rnaturalearth")
+library("classInt")
+library("stringr")
+library("viridisLite")
+library("tidyverse")
+library("sf")
+library("smoothr")
+library("plotly")
+```
+
+### 4.2 Downloading the world dataset
+
+For download the world population dataset, I used the `rnaturalearth::ne_download` function. It return a sf object in memory if `load = TRUE` and `returnclass = "sf"`.
+
+```{r results='hide'}
+worldmap <- ne_download(scale = 110,
+                        type = "countries",
+                        category = "cultural",
+                        destdir = tempdir(),
+                        load = TRUE,
+                        returnclass = "sf")
+```
+
+### 4.3 Wrangling a sf object
+
+The sf object `worldmap`  has 177 rows (countries) and 95 columns (variables), we selects the `POP_EST` (population) and `NAME` (countries names) columns.
+
+```{r}
+worldmap_pop <- worldmap %>%
+  select('POP_EST', 'NAME') %>%  # country population 
+  'colnames<-'(c('pop','name','geometry')) %>% 
+  mutate(pop = round(as.numeric(pop)/1000000,2)) %>% 
+  arrange(pop) 
+
+# Filling polygons with holes. (Sud-Africa case)
+sudafrica <- worldmap_pop[153,] %>% 
+  fill_holes(10^12) %>% 
+  st_cast('MULTIPOLYGON')
+worldmap_pop[153,] = sudafrica
+```
+
+### 4.4 Splitting the pop column according to specific intervals
+
+```{r}
+intervals <- classIntervals(worldmap_pop$pop,style = 'kmeans',n = 10)$brks
+intervals_f <-cut(worldmap_pop$pop,intervals)
+intervals_f <- factor(intervals_f,rev(levels(intervals_f)))
+
+lvls <- levels(intervals_f) %>% 
+  str_replace_all("\\(|\\]","") %>% 
+  str_replace_all(","," - ")
+lvls[c(1,length(lvls))] <- c('804 >', '< 4.08')  
+levels(intervals_f) <- lvls
+
+worldmap_pop$interval <- intervals_f
+text <- sprintf('Country: %s \nPopulation: %.2f',worldmap_pop$name,worldmap_pop$pop)
+worldmap_pop$text =text
+```
+
+### 4.5 It's time for Plotly!
+
+```{r}
+# geospatial parameters --------------------------------------------------
+geo <- list(showland = FALSE,
+            showlakes = FALSE,
+            showcountries = TRUE,
+            showocean = TRUE,
+            countrywidth = 0.5,
+            landcolor = toRGB("grey90"),
+            lakecolor = toRGB("white"),
+            oceancolor = toRGB("#e5f3fc"),
+            projection = list(type = 'orthographic',
+                              rotation = list(lon = -100,
+                                              lat = 40,
+                                              roll = 0)),
+            lonaxis = list(showgrid = TRUE,
+                           gridcolor = toRGB("gray80"),
+                           gridwidth = 0.5),
+            lataxis = list(showgrid = TRUE,
+                           gridcolor = toRGB("gray80"),
+                           gridwidth = 0.5))
+# Legend parameters -------------------------------------------------------
+legend_param <- list(x = 1.1, 
+                     y = 0.82,
+                     font = list(family = "sans-serif",
+                                 size = 18,
+                                 color = "black"),
+                     bgcolor = "#E2E2E2",
+                     bordercolor = "#FFFFFF",
+                     borderwidth = 2)
+# Image title parameters  -------------------------------------------------  
+legend_title <- list(yref = "paper",
+                     xref = "paper",
+                     y = 0.98,
+                     x = 1.4, 
+                     text = "<b>World population \n in millions</b>",
+                     font = list(color = "black",
+                                 family = "sans serif",
+                                 size = 22),
+                     showarrow = FALSE)
+
+p <- plot_ly(data = worldmap_pop, 
+             text = ~text,
+             color = ~interval,
+             colors = viridis(10,direction = -1), # the number of colors need to be according to intervals (classInt::classIntervals) 
+             type = "scattergeo",
+             alpha = 1,
+             stroke = I("black"), # boundary color line
+             hoverinfo = "text", # Display just the ~text
+             span = I(0.5))  %>% # thickness of boundary line
+  hide_colorbar() %>% 
+  layout(showlegend = TRUE,
+         geo = geo,
+         legend = legend_param,
+         annotations = legend_title) %>%
+  config(displayModeBar = FALSE) #do not display plotly toolkit.
+p
+```
+
+### 3.6 Creating a code Snippet in Rstudio!
+
+#### Adapted from [here](https://support.rstudio.com/hc/en-us/articles/204463668-Code-Snippets)
+
+Plotly is an incredible package for making interactive visualization, however, the enormous amount of graphical elements could be overwhelming. The solution is to create **Code snippets**.
+
+Code snippets are text macros that are used for quickly inserting common pieces of code. In Rstudio, you can edit the built-in snippet definitions and even add snippets of your own via the Edit Snippets button in:
+  
+  <p style="text-align:center">
+  **Tools -> Global Options -> Code -> Edit Snippet**
+  </p>
+
+![](https://user-images.githubusercontent.com/16768318/73115360-cc73d980-3f1c-11ea-9645-68756ab00870.gif){width=700px height=400px}
+
+My snippet for making 3D choropleths maps (`worldmap`) are defined below:
+  
+  ```{r eval = FALSE, echo = TRUE}
+snippet worldmap
+# geospatial parameters --------------------------------------------------
+geo <- list(showland = FALSE,
+            showlakes = FALSE,
+            showcountries = TRUE,
+            showocean = TRUE,
+            countrywidth = 0.5,
+            landcolor = toRGB("grey90"),
+            lakecolor = toRGB("white"),
+            oceancolor = toRGB("#e5f3fc"),
+            projection = list(type = 'orthographic',
+                              rotation = list(lon = -100,
+                                              lat = 40,
+                                              roll = 0)),
+            lonaxis = list(showgrid = TRUE,
+                           gridcolor = toRGB("gray80"),
+                           gridwidth = 0.5),
+            lataxis = list(showgrid = TRUE,
+                           gridcolor = toRGB("gray80"),
+                           gridwidth = 0.5))
+# Legend parameters -------------------------------------------------------
+legend_param <- list(x = 1.1, 
+                     y = 0.82,
+                     font = list(family = "sans-serif",
+                                 size = 18,
+                                 color = "black"),
+                     bgcolor = "#E2E2E2",
+                     bordercolor = "#FFFFFF",
+                     borderwidth = 2)
+# Image title parameters  -------------------------------------------------	
+legend_title <- list(yref = "paper",
+                     xref = "paper",
+                     y = 0.98,
+                     x = 1.4, 
+                     text = "<b>${1:Title}</b>",
+                     font = list(color = "black",
+                                 family = "sans serif",
+                                 size = 22),
+                     showarrow = FALSE)
+
+p <- plot_ly(data = ${2:yourdata}, 
+             text = ~${3:text},
+             color = ~${4:color},
+             colors = viridis(${5:N},direction = -1),
+             type = "scattergeo",
+             alpha = 1,
+             stroke = I("black"),
+             hoverinfo = "text",
+             span = I(0.5)) %>%
+  hide_colorbar() %>% 
+  layout(showlegend = TRUE,
+         geo = geo,
+         legend = legend_param,
+         annotations = legend_title) %>%
+  config(displayModeBar = FALSE)
+p
+```
+

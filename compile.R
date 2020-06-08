@@ -1,0 +1,9 @@
+library(blogdown)
+#/home/aybarpc01/Github/csaybar.github.io/themes/hugo-universal-theme/layouts/partials/basic.html
+#blogdown::install_hugo("0.55.5")
+blogdown::build_site()
+#blogdown::build_dir()
+blogdown::serve_site()
+blogdown::count_yaml()
+#blogdown::hugo_version()
+blogdown::serve_site()

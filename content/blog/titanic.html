@@ -928,7 +928,7 @@ print(&quot;Surname: &quot; + &quot; | &quot;.join(surname))
 dataset[&#39;Title&#39;] = title; dataset[&#39;Surname&#39;] = surname
 del dataset[&#39;Name&#39;]</code></pre>
 <p>In anyone ML pipeline is essential getting an excellent visual representation to find out hidden patterns in the data. To make it easily accessible, the Python package <strong>preml</strong> can also draws plots similar to <a href="https://christophm.github.io/interpretable-ml-book/pdp.html">partial dependence plots</a>, but directly from data instead of using a trained model. This technique was inspired in the python package <a href="https://github.com/abhayspawar/featexp">featexp</a>, I have rewritten all the code and create a class (DUplots) for a more easily use.</p>
-<p>For example, <strong><code>preml.DUplots</code></strong> can help you to understand if the features <code>Title</code> vs. [<code>Age</code>, <code>Fare</code>] have some kind of relationship.</p>
+<p>For example, <strong><code>preml.DUplots</code></strong> can help you to understand if the features <code>Title</code> vs. [<code>Age</code>, <code>Fare</code>] have some kind of relationship.</p>
 <pre class="python"><code>from preml.plots import DUplots
 
 #eliminate NA of the &quot;Age&quot; column.

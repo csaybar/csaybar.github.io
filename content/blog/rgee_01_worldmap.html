@@ -1,0 +1,183 @@
+---
+title: "rgee example #1: Creating static and interactive maps"
+subtitle: "Global Land Surface Temperature map"
+author: "Cesar Aybar"
+date: '2020-06-10'
+banner: "img/banners/06_lstmap.png"
+tags: ["Earth Engine", "mapedit", "raster", "tmap"]
+---
+
+
+
+<p><a href="https://github.com/r-spatial/rgee/blob/examples/FeatureCollection/search_by_buffer_distance.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_01_search_by_buffer_distance.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/convolutions.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_02_convolutions.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/FeatureCollection/idw_interpolation.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_03_idw_interpolation.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/spectral_unmixing.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_04_spectral_unmixing.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Algorithms/CloudMasking/sentinel-2.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_05_sentinel2.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/canny_edge_detector.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_06_canny_edge_detector.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/cumulative_cost_mapping.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_07_cumulative_cost_mapping.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/zero_crossing.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_08_zero_crossing.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples//Visualization/hillshade.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_09_hillshade.png" height="100" hspace="5"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/styled_layer_descriptors.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_10_styled_layer_descriptors.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/terrain_visualization.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_11_terrain_visualization.png" height="100" hspace="5"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/us_census_counties.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_12_us_census_counties.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/global_power_plant_database.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_13_global_power_plant_database.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/landsat_wrs2_grid.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_14_landsat_wr2_grid.png" height="100" hspace="4"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Water/jrc_metadata.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_15_jrc_metadata.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples//Visualization/visualizing_geometries.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_16_visualizing_geometries.png" height="100" hspace="1"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Algorithms/center_pivot_irrigation_detector.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_17_center_pivot_irrigation_detector.png" height="100" hspace="2"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/image_color_ramp.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_18_image_color_ramp.png" height="100"/></a></p>
+<p>Scientific and data analytics are constantly wrangling data and creating visualizations to explain their results. If you are working with structured data, R packages like <a href="https://github.com/tidyverse/tidyverse">tidyverse</a> or <a href="https://github.com/Rdatatable/data.table">data.table</a> are probably making your life very pleasant. But what happens for unstructured spatial data?. For instance, if your boss (advisor) asks you to dig through a giant pile of <a href="https://modis.gsfc.nasa.gov/">MODIS</a> images, what R package would you use?. Remember that these are not simple images, but images that have a <a href="https://en.wikipedia.org/wiki/Spatial_reference_system">CRS</a>, multiple bands, temporal dimension, etc. Probably, doing a simple analysis, such as obtaining the average, could take you several days, and if you have a really bad internet connection (like me), many weeks.</p>
+<p>To deal with large spatial processes, I would like to introduce you a <strong>new R package</strong> called <a href="https://github.com/r-spatial/rgee">rgee</a> which seeks to make working with big spatial dataset, not a complete nightmare. This is the first tutorial of a series of five tutorials in which I would like to show you how rgee interacts with other cool R packages like <a href="https://github.com/r-spatial/sf">sf</a>, <a href="https://github.com/r-spatial/stars">stars</a>, <a href="https://github.com/rspatial/raster">raster</a>, <a href="https://github.com/appelmar/gdalcubes_R">gdalcubes</a>, <a href="https://github.com/mtennekes/tmap">tmap</a>, <a href="https://github.com/r-spatial/mapedit">mapedit</a>, and <a href="https://github.com/r-spatial/mapview">mapview</a> to solve problems.</p>
+<p>In this first tutorial, I would show you <strong>how to create static and interactive</strong> Land Surface Temperature <strong>maps</strong> of the whole world with a few lines of code.</p>
+<div id="what-is-rgee" class="section level2">
+<h2>What is rgee?</h2>
+<p><a href="https://github.com/r-spatial/rgee">rgee</a> is a bindings package for <a href="https://earthengine.google.com/">Google Earth Engine</a> (GEE). As you probably know, <a href="https://earthengine.google.com/">GEE</a> is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google’s infrastructure. While the use of GEE has spread around different earth sciences communities. It has been relegated from R spatial users due that Google only offers native support for Python and JavaScript programming languages.</p>
+<p>To offer support for R, <strong>rgee</strong> wraps the <a href="https://github.com/google/earthengine-api">Earth Engine Python API</a> using <a href="https://rstudio.github.io/reticulate/">reticulate</a>. In contrast with native client libraries, <a href="https://github.com/r-spatial/rgee">rgee</a> adds several new features such as (i) new I/O design, (ii) interactive map display, (iii) easy extraction of time series, (iv) asset management interface, and (v) metadata display. The image bellow show you how <a href="https://github.com/r-spatial/rgee">rgee</a> currently works.</p>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/71569603-3341d680-2ac8-11ea-8787-4dd1fbba326f.png" width = 100%>
+</center>
+<p>Install the rgee package from GitHub is quite simple, you just have to run in your R console as follows:</p>
+<pre class="r"><code>remotes::install_github(&quot;r-spatial/rgee&quot;)</code></pre>
+<p>Prior to using rgee you will need to install a Python version higher than 3.5 in your system. rgee counts with an installation function (<a href="https://r-spatial.github.io/rgee/reference/ee_install.html">ee_install</a>) which helps to setup rgee correctly:</p>
+<pre class="r"><code>library(rgee)
+ee_install()</code></pre>
+<p>For further information of rgee. Visit the website: <a href="https://r-spatial.github.io/rgee/">https://r-spatial.github.io/rgee/</a></p>
+</div>
+<div id="tutorial-1-global-land-surface-temperature-map" class="section level2">
+<h2>Tutorial #1: Global Land Surface Temperature map</h2>
+<p>Load the necessary libraries</p>
+<pre class="r"><code>library(mapedit) # (OPTIONAL) Interactive editing of vector data
+library(raster)  # Manipulate raster data
+library(scales)  # Scale functions for visualization
+library(cptcity)  # cptcity color gradients!
+library(tmap)    # Thematic Map Visualization &lt;3
+library(rgee)    # Bindings for Earth Engine</code></pre>
+<p>Initialize your Earth Engine session</p>
+<pre class="r"><code>ee_Initialize()</code></pre>
+<p>Search into the Earth Engine’s public data archive. We will use the <a href="https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD11A1">MOD11A1 V6 product</a>, it
+provides daily land surface temperature (LST) and emissivity values in a 1200 x 1200 kilometer grid.</p>
+<pre class="r"><code>ee_search_dataset() %&gt;%
+  ee_search_tags(&quot;mod11a1&quot;) %&gt;%
+  ee_search_display()</code></pre>
+<p>Load the MOD11A1 <a href="https://developers.google.com/earth-engine/ic_creating">ImageCollection</a>. Filter it, for instance, for a specific month, and create a mean composite.</p>
+<pre class="r"><code>dataset &lt;- ee$ImageCollection(&quot;MODIS/006/MOD11A1&quot;)$
+  filter(ee$Filter$date(&#39;2020-01-01&#39;, &#39;2020-01-31&#39;))$
+  mean()</code></pre>
+<p>The ‘LST_Day_1km’ is the band that contains daytime land surface temperature values. We select it and transform the values from kelvin to celsius degrees.</p>
+<pre class="r"><code>landSurfaceTemperature &lt;- dataset$
+  select(&quot;LST_Day_1km&quot;)$
+  multiply(0.02)$
+  subtract(273.15)</code></pre>
+<p>If you feel weird using the dollar sign operator (‘$’) in this way. Try using pipes (%&gt;%) instead.</p>
+<pre class="r"><code>landSurfaceTemperature &lt;- dataset %&gt;%
+  ee$Image$select(&quot;LST_Day_1km&quot;) %&gt;%
+  ee$Image$multiply(0.02) %&gt;%
+  ee$Image$subtract(273.15)</code></pre>
+<p>I find this syntax more comprehensible and it helps for debugging large projects faster. If you feel somewhat lost by all the Earth Engine’s functionality, try using <code>ee_help</code>. It will display the official Earth Engine documentation in the R help format:</p>
+<pre class="r"><code>ee_help(ee$ImageCollection$select)</code></pre>
+<p>Define the list of parameters for visualization. See <a href="https://developers.google.com/earth-engine/image_visualization">Earth Engine Image visualization</a> or
+<a href="https://r-spatial.github.io/rgee/reference/Map.html">Map documentation</a> to get more details.</p>
+<pre class="r"><code>landSurfaceTemperatureVis &lt;- list(
+  min = -50, 
+  max = 50,
+  palette = cpt(&quot;grass_bcyr&quot;)
+)</code></pre>
+<p>That’s all. <strong>We are ready to create a interactive map!</strong>. It is quite similar to the JS code editor.</p>
+<pre class="r"><code>Map$addLayer(
+  eeObject = landSurfaceTemperature,
+  visParams = landSurfaceTemperatureVis,
+  name = &#39;Land Surface Temperature&#39;
+)</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84001129-a2e7a780-a92b-11ea-9df8-639e82f21955.png" width = 100%>
+</center>
+<p>If you are a experimented <a href="https://code.earthengine.google.com/">JS Code Editor</a> user probably you miss the geometry editing
+toolbar. But don’t worry!, if you combine rgee with <a href="https://github.com/r-spatial/mapedit">mapedit</a> you will have
+the same result.</p>
+<pre class="r"><code>Map$addLayer(
+  eeObject = landSurfaceTemperature,
+  visParams = landSurfaceTemperatureVis,
+  name = &#39;Land Surface Temperature&#39;
+) %&gt;% editMap() -&gt; my_polygon</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84001183-b8f56800-a92b-11ea-8f3e-c121c4981d63.png" width = 100%>
+</center>
+<p>To create a static map you must first to download the raster. rgee offers several functions to accomplish this task (see <a href="ahttps://r-spatial.github.io/rgee/articles/setup.html#import-and-export-spatial-data-using-rgee">details</a>). In this tutorial we will learn to use <a href="https://r-spatial.github.io/rgee/reference/ee_as_thumbnail.html">ee_as_thumbnail</a>. It is a function that offers a faster download but at the expense of precision due that output image is rescaled to the range [0-1]. ee_as_thumbnail is specially useful for create <strong>static maps</strong>.</p>
+<pre class="r"><code>geometry &lt;- ee$Geometry$Rectangle(
+  coords = c(-180,-90,180,90),
+  proj = &quot;EPSG:4326&quot;,
+  geodesic = FALSE
+)
+
+world_temp &lt;- ee_as_thumbnail(
+  image = landSurfaceTemperature,  # Image to export
+  region = geometry, # Region of interest
+  dimensions = 1024, # output dimension
+  raster = TRUE, # If FALSE returns a stars object. FALSE by default
+  vizparams = landSurfaceTemperatureVis[-3] # Delete the palette element
+)</code></pre>
+<p>The parameter <strong>geodesic</strong> helps us to create geometries with straight edges (geodesic is by default TRUE). The figure below (extracted from <a href="https://developers.google.com/earth-engine/geometries_planar_geodesic">here</a>) shows the difference between the default geodesic polygon and the result of converting the polygon to a planar representation (geodesic = FALSE).</p>
+<center>
+<img src="https://developers.google.com/earth-engine/images/Geometry_geodesic_vs_planar_annotated.png" width=80%>
+</center>
+<p>Note that the values of <code>world_temp</code> are in the range [0-1], to rescaled again the values to the real range we could use this simple trick:</p>
+<pre class="r"><code>min_lst &lt;- landSurfaceTemperatureVis$min
+max_lst &lt;- landSurfaceTemperatureVis$max
+world_temp[] &lt;- scales::rescale(
+  getValues(world_temp), c(min_lst, max_lst)
+)</code></pre>
+<p>If you want to get the exact pixel value use <a href="https://r-spatial.github.io/rgee/reference/ee_as_star.html">ee_as_star</a> or <a href="https://r-spatial.github.io/rgee/reference/ee_as_raster.html">ee_as_raster</a> instead of ee_as_thumbnail. Finally, we change the raster projection from <code>longlat</code> to <code>Eckert IV</code> (an equal-area pseudocylindrical map projection).</p>
+<pre class="r"><code>data(&quot;World&quot;) # Load world vector (available after load tmap)
+world_temp_robin &lt;- projectRaster(
+  from = world_temp,
+  crs = crs(World)
+) %&gt;% mask(World)</code></pre>
+<p>That’s all!. We are ready to create a <strong>static map</strong> using <strong>tmap</strong>!.</p>
+<pre class="r"><code>tm_shape(shp = world_temp_robin) +
+  tm_raster(
+    title = &quot;LST (°C)&quot;,
+    palette = cpt(&quot;grass_bcyr&quot;, n = 100),
+    stretch.palette = FALSE,
+    style = &quot;cont&quot;
+  ) +
+  tm_shape(shp = World) + 
+  tm_borders(col = &quot;black&quot;, lwd = 0.7) +
+  tm_graticules(alpha=0.8, lwd = 0.5, labels.size = 0.5) +
+  tm_layout() +
+  tmap_style(style = &quot;natural&quot;) +
+  tm_layout(
+    scale = .8,
+    bg.color = &quot;gray90&quot;,
+    frame = FALSE,
+    frame.lwd = NA,
+    panel.label.bg.color = NA,
+    attr.outside = TRUE,
+    main.title.size = 0.8,
+    main.title = &quot;Global monthly mean LST from MODIS: January 2020&quot;,
+    main.title.fontface = 2,
+    main.title.position = 0.1,
+    legend.title.size = 1,
+    legend.title.fontface = 2,
+    legend.text.size = 0.7,
+    legend.frame = FALSE,
+    legend.outside = TRUE,
+    legend.position = c(0.10, 0.38),
+    legend.bg.color = &quot;white&quot;,
+    legend.bg.alpha = 1
+  ) +
+  tm_credits(
+    text = &quot;Source: MOD11A1 - Terra Land Surface Temperature and Emissivity Daily Global 1km&quot;,
+    size = 0.8,
+    position = c(0.1,0)
+  ) -&gt; lst_tmap
+tmap_save(lst_tmap, &quot;lst_tmap.svg&quot;, width = 1865, height = 1165)</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84001249-d6c2cd00-a92b-11ea-8ce1-63dc8221bbdb.png" width=80%>
+</center>
+<p>This is the end of this tutorial! the next week I will write a little about how to efficiently download large datasets using <strong>rgee</strong>.</p>
+<p><strong>The complete code is available <a href="https://gist.github.com/csaybar/9412f1fc5705833d948b40efb49d2cb7">here</a>.</strong></p>
+<div id="more-than-250-examples-using-google-earth-engine-with-r-are-available-here" class="section level4">
+<h4>More than 250+ examples using Google Earth Engine with R are available <a href="http://csaybar.github.io/rgee-examples/">here</a></h4>
+</div>
+</div>
