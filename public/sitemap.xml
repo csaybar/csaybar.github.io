@@ -4,49 +4,54 @@
   
   <url>
     <loc>/blog/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/earth-engine/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/mapedit/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/raster/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/blog/2020/06/15/rgee_02_io/</loc>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/tmap/</loc>
+    <lastmod>2020-06-15T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/blog/2020/06/10/rgee_01_worldmap/</loc>
     <lastmod>2020-06-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/tmap/</loc>
-    <lastmod>2020-06-10T00:00:00+00:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>

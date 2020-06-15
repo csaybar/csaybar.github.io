@@ -6,10 +6,19 @@
     <description>Recent content on csaybar</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 10 Jun 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 15 Jun 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>rgee example #2: Satellite image preprocessing</title>
+      <link>/blog/2020/06/15/rgee_02_io/</link>
+      <pubDate>Mon, 15 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/2020/06/15/rgee_02_io/</guid>
+      <description>Image preprocessing (i.e. download, reprojection, mosaicking, resize, bad pixels control and composite) has always been a time-consuming activity. Although R offers incredible open-source “API packages” to easily get geospatial resources (modistsp, getSpatialData, elevation, landsat and so on …), these still require that users count with competent computers (and high-end for users that want to analysis large areas).</description>
+    </item>
     
     <item>
       <title>rgee example #1: Creating static and interactive maps</title>

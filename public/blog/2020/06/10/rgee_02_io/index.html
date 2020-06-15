@@ -7,13 +7,13 @@
   <meta name="googlebot" content="index,follow,snippet,archive">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <title>Download the GLC30 product for Peru and Ecuador</title>
+  <title>rgee example #2: Preprocessing Images with Google Earth Engine from R</title>
   <meta name="author" content="Cesar Aybar" />
   
   
   
   
-  <meta name="keywords" content="devows, hugo, go, Google Earth Engine, python, folium">
+  <meta name="keywords" content="devows, hugo, go, Earth Engine, mapedit, raster, tmap">
   
   
   <meta name="description" content="Site template made by devcows using hugo">
@@ -68,39 +68,40 @@
   
   <meta property="og:locale" content="en_us">
   <meta property="og:site_name" content="csaybar">
-  <meta property="og:title" content="Download the GLC30 product for Peru and Ecuador">
+  <meta property="og:title" content="rgee example #2: Preprocessing Images with Google Earth Engine from R">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="/blog/2019/10/10/landuseperu/" />
+  <meta property="og:url" content="/blog/2020/06/10/rgee_02_io/" />
   <meta property="og:description" content="Site template made by devcows using hugo">
-  <meta property="og:image" content="/img/banners/banner-1.jpg">
-  <meta property="og:image:type" content="image/jpg">
+  <meta property="og:image" content="/img/banners/07_preprocessing.png">
+  <meta property="og:image:type" content="image/png">
   
   
   
-    <meta property="og:image:width" content="1919">
-    <meta property="og:image:height" content="1439">
+    <meta property="og:image:width" content="1949">
+    <meta property="og:image:height" content="2048">
   
   
-  <meta property="og:updated_time" content="2019-10-10T00:00:00Z">
+  <meta property="og:updated_time" content="2020-06-10T00:00:00Z">
   
     
     
     
-    <meta property="article:tag" content="Google Earth Engine">
-    <meta property="article:tag" content="python">
-    <meta property="article:tag" content="folium">
+    <meta property="article:tag" content="Earth Engine">
+    <meta property="article:tag" content="mapedit">
+    <meta property="article:tag" content="raster">
+    <meta property="article:tag" content="tmap">
     
     
-    <meta property="article:published_time" content="2019-10-10T00:00:00Z">
-    <meta property="article:modified_time" content="2019-10-10T00:00:00Z">
+    <meta property="article:published_time" content="2020-06-10T00:00:00Z">
+    <meta property="article:modified_time" content="2020-06-10T00:00:00Z">
   
 
   
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@csaybar">
-  <meta name="twitter:title" content="Download the GLC30 product for Peru and Ecuador">
+  <meta name="twitter:title" content="rgee example #2: Preprocessing Images with Google Earth Engine from R">
   
-  <meta name="twitter:image" content="/img/banners/banner-1.jpg">
+  <meta name="twitter:image" content="/img/banners/07_preprocessing.png">
   
   <meta name="twitter:description" content="Site template made by devcows using hugo">
   
@@ -121,9 +122,9 @@
         <div class="container">
             <div class="navbar-header">
                 <a class="navbar-brand home" href="/">
-                    <img src="/img/logo.svg" alt="Download the GLC30 product for Peru and Ecuador logo" class="hidden-xs hidden-sm" width="190">
-                    <img src="/img/logo-small.svg" alt="Download the GLC30 product for Peru and Ecuador logo" class="visible-xs visible-sm" width="190">
-                    <span class="sr-only">Download the GLC30 product for Peru and Ecuador - go to homepage</span>
+                    <img src="/img/logo.svg" alt="rgee example #2: Preprocessing Images with Google Earth Engine from R logo" class="hidden-xs hidden-sm" width="190">
+                    <img src="/img/logo-small.svg" alt="rgee example #2: Preprocessing Images with Google Earth Engine from R logo" class="visible-xs visible-sm" width="190">
+                    <span class="sr-only">rgee example #2: Preprocessing Images with Google Earth Engine from R - go to homepage</span>
                 </a>
                 <div class="navbar-buttons">
                     <button type="button" class="navbar-toggle btn-template-main" data-toggle="collapse" data-target="#navigation">
@@ -222,7 +223,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h1>Download the GLC30 product for Peru and Ecuador</h1>
+                <h1>rgee example #2: Preprocessing Images with Google Earth Engine from R</h1>
             </div>
         </div>
     </div>
@@ -238,175 +239,123 @@
 
                     <div class="col-md-9" id="blog-post">
 
-                        <p class="text-muted text-uppercase mb-small text-right">By <a href="#">Cesar Aybar</a> | 2019-10-10</p>
+                        <p class="text-muted text-uppercase mb-small text-right">By <a href="#">Cesar Aybar</a> | 2020-06-10</p>
 
                         <div id="post-content">
                           
 
 
+<p><a href="https://github.com/r-spatial/rgee/blob/examples/FeatureCollection/search_by_buffer_distance.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_01_search_by_buffer_distance.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/convolutions.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_02_convolutions.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/FeatureCollection/idw_interpolation.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_03_idw_interpolation.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/spectral_unmixing.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_04_spectral_unmixing.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Algorithms/CloudMasking/sentinel-2.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_05_sentinel2.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/canny_edge_detector.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_06_canny_edge_detector.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/cumulative_cost_mapping.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_07_cumulative_cost_mapping.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/zero_crossing.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_08_zero_crossing.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples//Visualization/hillshade.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_09_hillshade.png" height="100" hspace="5"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/styled_layer_descriptors.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_10_styled_layer_descriptors.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/terrain_visualization.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_11_terrain_visualization.png" height="100" hspace="5"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/us_census_counties.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_12_us_census_counties.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/global_power_plant_database.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_13_global_power_plant_database.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/landsat_wrs2_grid.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_14_landsat_wr2_grid.png" height="100" hspace="4"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Water/jrc_metadata.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_15_jrc_metadata.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples//Visualization/visualizing_geometries.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_16_visualizing_geometries.png" height="100" hspace="1"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Algorithms/center_pivot_irrigation_detector.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_17_center_pivot_irrigation_detector.png" height="100" hspace="2"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/image_color_ramp.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_18_image_color_ramp.png" height="100"/></a></p>
+<p>Image preprocessing (i.e. download, reprojection, mosaicking, resize, bad pixels control and composite) has always been a time-consuming activity. Although R offers incredible open-source “API packages” to easily get geospatial resources (<a href="https://github.com/ropensci/MODIStsp">modistsp</a>, <a href="https://github.com/16EAGLE/getSpatialData">getSpatialData</a>, <a href="https://github.com/jhollist/elevatr">elevation</a>, <a href="https://github.com/phiala/landsat">landsat</a> and so on …), these still require that users count with a high-end computers. Since this, a privilege that many people can’t simply afford.</p>
+<p>I love <a href="https://earthengine.google.com/">Google Earth Engine</a> because democratizes access to high performance computing, enabling image preprocessing and analysis in the worst circumstances (e.g. in the middle of the Amazon with a Pentium IV laptop and weak internet access conditions). In this second tutorial (see the first <a href="https://csaybar.github.io/blog/2020/06/10/rgee_01_worldmap/">here</a>) of rgee, I would show you how to <strong>preprocess and download Landsat, Sentinel and MODIS images</strong> to anywhere in the world at any time <strong>without consuming your computational resources</strong>. In addition you will also learn to connect the results to other R packages such as <a href="https://github.com/r-spatial/sf">sf</a>, <a href="https://github.com/r-spatial/stars">stars</a>, <a href="https://github.com/rspatial/raster">raster</a> or <a href="https://github.com/appelmar/gdalcubes_R">gdalcubes</a>.</p>
+<div id="what-is-rgee" class="section level2">
+<h2>What is rgee?</h2>
+<p><a href="https://github.com/r-spatial/rgee">rgee</a> is a bindings package for <a href="https://earthengine.google.com/">Google Earth Engine</a> (GEE). As you probably know, <a href="https://earthengine.google.com/">GEE</a> is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google’s infrastructure. While the use of GEE has spread around different earth sciences communities. It has been relegated from R spatial users due that Google only offers native support for Python and JavaScript programming languages.</p>
+<p>To offer support for R, <strong>rgee</strong> wraps the <a href="https://github.com/google/earthengine-api">Earth Engine Python API</a> using <a href="https://rstudio.github.io/reticulate/">reticulate</a>. In contrast with native client libraries, <a href="https://github.com/r-spatial/rgee">rgee</a> adds several new features such as (i) new I/O design, (ii) interactive map display, (iii) easy extraction of time series, (iv) asset management interface, and (v) metadata display. The image bellow show you how <a href="https://github.com/r-spatial/rgee">rgee</a> currently works.</p>
 <center>
-<a href="https://colab.research.google.com/github/csaybar/EEwPython/blob/master/GLC30.ipynb"><img align="left" src="https://colab.research.google.com/assets/colab-badge.svg" alt="Reproducible Example here" title="Open and Execute in Google Colaboratory"></a>
+<img src="https://user-images.githubusercontent.com/16768318/71569603-3341d680-2ac8-11ea-8787-4dd1fbba326f.png" width = 100%>
 </center>
-<p><br></p>
-<p>Land Cover information is fundamental for environmental change studies, land resource management, sustainable development, and many other societal benefits. In <strong>Google Earth Engine</strong> existing different coarse Land use/cover products (e.g. MCD12Q1-500m) that are not able to capture the most significant human impacts on land systems due to its spatial resolution. Therefore, this short post aims to introduce and explain step by step how to download the <a href="https://reader.elsevier.com/reader/sd/pii/S0924271614002275?token=BF89D29031101CDB800927F3DA0DA572A4BBBA74220D9178A24F13A5140E629638CFA580F464F61E1500662B55B90A76">GLC30</a> a relative new Global Land Cover product at 30-meter spatial resolution.</p>
-<center>
-<img src='http://www.globallandcover.com/home/images/vegas.jpg'>
-</center>
-<div id="installing" class="section level2">
-<h2>1. Installing</h2>
-<p>Before coding do not forget install and load the following packages and remenber that you can communicate with the bash console prepending an ! to the code.</p>
-<pre class="python"><code>!pip install geopandas #tensorflow 2.0
-!pip install earthengine-api==0.1.175 #earthengine API</code></pre>
+<p>Install the rgee package from GitHub is quite simple, you just have to run in your R console as follows:</p>
+<pre class="r"><code>remotes::install_github(&quot;r-spatial/rgee&quot;)</code></pre>
+<p>Prior to using rgee you will need to install a Python version higher than 3.5 in your system. rgee counts with an installation function (<a href="https://r-spatial.github.io/rgee/reference/ee_install.html">ee_install</a>) which helps to setup rgee correctly:</p>
+<pre class="r"><code>library(rgee)
+ee_install()</code></pre>
+<p>For further information of rgee. Visit the website: <a href="https://r-spatial.github.io/rgee/">https://r-spatial.github.io/rgee/</a></p>
 </div>
-<div id="authentification" class="section level2">
-<h2>2. Authentification</h2>
-<p>This tutorial needs interacting with others Google services. For accomplish this task, it’s necessary to authenticate (as yourself). The code below shows you how to do it.</p>
-<ul>
-<li><strong>Google Drive</strong></li>
-</ul>
-<p>We will use Google Drive for save us results.</p>
-<pre class="python"><code>from google.colab import drive
-drive.mount(&#39;/content/drive&#39;)  </code></pre>
-<ul>
-<li><strong>Authenticate to Earth Engine</strong></li>
-</ul>
-<pre class="python"><code>!earthengine authenticate </code></pre>
+<div id="tutorial-2.1-monthly-composite-of-modis-ndvi-mod13a2" class="section level2">
+<h2>Tutorial #2.1: Monthly Composite of MODIS NDVI (MOD13A2)</h2>
+<p>Load the necessary libraries</p>
+<pre class="r"><code>library(cptcity)
+library(raster)
+library(stars)
+library(rgee)
+library(sf)</code></pre>
+<p>Initialize your Earth Engine session</p>
+<pre class="r"><code>ee_Initialize()</code></pre>
+<p>Search into the Earth Engine’s public data archive. We will use the <a href="https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD13A2">MOD13A2 V6 product</a>, it provides two Vegetation Indices (VI): the Normalized Difference Vegetation Index (NDVI) and the Enhanced Vegetation Index (EVI). The algorithm for this product chooses the best available pixel value from all the acquisitions from the 16-day period.</p>
+<pre class="r"><code>ee_search_dataset() %&gt;%
+  ee_search_title(&quot;mod13&quot;) %&gt;%
+  ee_search_title(&quot;1km&quot;) %&gt;%
+  ee_search_display()                 
+
+modis_ndvi &lt;- ee$ImageCollection(&quot;MODIS/006/MOD13A2&quot;)</code></pre>
+<p>Despite being an daily product, in some regions, it is impossible to have always complete quality scenes due to cloud coverage. Fortunately, MODIS products come up with a quality control bits (<strong>SummaryQA</strong>). The function bellow help us to distinct between <strong>Good data</strong> (bit == 00) and <strong>Marginal data</strong> (bit != 00).</p>
+<pre class="r"><code>getQABits &lt;- function(image, qa) {
+  # Convert decimal (character) to decimal (little endian)
+  qa &lt;- sum(2^(which(rev(unlist(strsplit(as.character(qa), &quot;&quot;)) == 1))-1))
+  # Return a single band image of the extracted QA bits, giving the qa value.
+  image$eq(qa)
+}</code></pre>
+<p>Using <code>getQABits</code> we define single argument function that will be used to map over all the images of the collection (<code>modis_ndvi</code>).</p>
+<pre class="r"><code>mod13A2_clean &lt;- function(img) {
+  # Extract the NDVI band
+  ndvi_values &lt;- img$select(&quot;NDVI&quot;)
+  
+  # Extract the quality band
+  ndvi_qa &lt;- img$select(&quot;SummaryQA&quot;)
+  
+  # Select pixels with high confidence
+  quality_mask &lt;- getQABits(ndvi_qa, &quot;00&quot;)
+  
+  # Mask pixels with low confidence.
+  ndvi_values$updateMask(quality_mask)
+}</code></pre>
+<p>To exporting images from Earth Engine, firstly we define a region of interest with <code>sf</code>. Then using <code>sf_as_ee</code> we convert the sf object to an Earth Engine object (<code>ee$FeatureCollection'</code>).</p>
+<pre class="r"><code>roi &lt;- st_read(system.file(&quot;shape/nc.shp&quot;, package=&quot;sf&quot;)) %&gt;% 
+  st_bbox() %&gt;% 
+  st_as_sfc() %&gt;% 
+  sf_as_ee()</code></pre>
+<p>That’s all!, we have everything to create the monthly NDVI composite. We filter the collection by date, select the images for January, map over the collection, and apply a temporal median function.</p>
+<pre class="r"><code>ndvi_composite &lt;- modis_ndvi$
+  filter(ee$Filter$date(&#39;2001-01-01&#39;, &#39;2019-12-31&#39;))$
+  filter(ee$Filter$calendarRange(1, field = &quot;month&quot;))$
+  map(mod13A2_clean)$
+  median()</code></pre>
+<p>Optional. We use Map$addLayer to display the results in an interactive way.</p>
+<pre class="r"><code>scale &lt;- 0.0001
+Map$setCenter(lon = -79,lat = 35,zoom = 6)
+Map$addLayer(
+  eeObject = ndvi_composite, 
+  visParams = list(
+    min = 0.2 / scale, 
+    max = 0.7 / scale,
+    palette = cpt(&quot;grass_ndvi&quot;, 10)
+  )
+) + Map$addLayer(roi)</code></pre>
+<p>To download the results we use the function <code>ee_as_raster</code>.</p>
+<pre class="r"><code>mod_ndvi &lt;- ee_as_raster(
+  image = ndvi_composite,
+  region = roi$geometry(),
+  scale = 1000,
+  via = &#39;drive&#39;
+)</code></pre>
+<p>That’s all!, for donwload all the month you could see the description <a href="">here</a></p>
 </div>
-<div id="testing-the-software-setup" class="section level2">
-<h2>3. Testing the software setup</h2>
-<pre class="python"><code># Earth Engine Python API
-import ee
-ee.Initialize()
-
-import folium
-import geopandas as gpd
-
-# Define the URL format used for Earth Engine generated map tiles.
-EE_TILES = &#39;https://earthengine.googleapis.com/map/{mapid}/{{z}}/{{x}}/{{y}}?token={token}&#39;
-
-print(&#39;Folium version: &#39; + folium.__version__)
-print(&#39;Geopandas version: &#39; + gpd.__version__)</code></pre>
+<div id="tutorial-1.2-download-sentinel-2-imagery" class="section level2">
+<h2>Tutorial #1.2: Download SENTINEL-2 imagery</h2>
 </div>
-<div id="display-either-ee.image-or-ee.feature" class="section level2">
-<h2>4. Display either ee.Image or ee.Feature</h2>
-<pre class="python"><code>def Mapdisplay(center, dicc, Tiles=&quot;OpensTreetMap&quot;,zoom_start=10):
-    &#39;&#39;&#39;
-    :param center: Center of the map (Latitude and Longitude).
-    :param dicc: Earth Engine Geometries or Tiles dictionary
-    :param Tiles: Mapbox Bright,Mapbox Control Room,Stamen Terrain,Stamen Toner,stamenwatercolor,cartodbpositron.
-    :zoom_start: Initial zoom level for the map.
-    :return: A folium.Map object.
-    &#39;&#39;&#39;
-    center = center[::-1]
-    mapViz = folium.Map(location=center,tiles=Tiles, zoom_start=zoom_start)
-    for k,v in dicc.items():
-      if ee.image.Image in [type(x) for x in v.values()]:
-        folium.TileLayer(
-            tiles = v[&quot;tile_fetcher&quot;].url_format,
-            attr  = &#39;Google Earth Engine&#39;,
-            overlay =True,
-            name  = k
-          ).add_to(mapViz)
-      else:
-        folium.GeoJson(
-        data = v,
-        name = k
-          ).add_to(mapViz)
-    mapViz.add_child(folium.LayerControl())
-    return mapViz</code></pre>
+<div id="tutorial-1.2-download-vector" class="section level2">
+<h2>Tutorial #1.2: Download vector</h2>
+<div id="more-than-250-examples-using-google-earth-engine-with-r-are-available-here" class="section level4">
+<h4>More than 250+ examples using Google Earth Engine with R are available <a href="http://csaybar.github.io/rgee-examples/">here</a></h4>
 </div>
-<div id="preparing-geometry-data-geopandas-to-ee" class="section level2">
-<h2>5. Preparing Geometry Data (Geopandas to EE)</h2>
-<pre class="python"><code>#download the geometry 
-import urllib
-url = &#39;https://github.com/csaybar/csaybar.github.io/raw/master/data/provinces.geojson&#39;
-urllib.request.urlretrieve(url, &#39;Peru.geojson&#39;)</code></pre>
-<pre class="python"><code># Reading the file
-peruprov = gpd.read_file(&#39;Peru.geojson&#39;)
-lima = peruprov[peruprov.NOMBRE == &#39;LIMA&#39;].to_json() # Selecting Lima
-lima_coords = eval(lima)[&#39;features&#39;][0][&#39;geometry&#39;][&#39;coordinates&#39;][0] #getting just the coordinates
-
-# ee.Geometry -&gt; ee.Feature -&gt; ee.FeatureCollection
-eeLima = ee.FeatureCollection([ee.Feature(ee.Geometry.Polygon(lima_coords),{&#39;Name&#39;:&#39;Lima&#39;})])</code></pre>
-<pre class="python"><code># display the geometry using folium
-center_lima = eeLima.geometry().centroid().getInfo()[&#39;coordinates&#39;]
-center_lima.reverse()
-
-fig =eeLima.draw(**{&#39;color&#39;: &#39;FF0000&#39;, &#39;strokeWidth&#39;: 5}).getMapId()
-Mapdisplay(center_lima,{&#39;Lima&#39;:fig})</code></pre>
-<center>
-<img src='https://user-images.githubusercontent.com/16768318/73024516-9d2e7100-3e25-11ea-8d2b-2e17ca61c77d.png' width="90%">
-</center>
-</div>
-<div id="reading-and-clipping-the-glc30-dataset" class="section level2">
-<h2>6. Reading and clipping the GLC30 dataset</h2>
-<pre class="python"><code># Remove 0 and 255 values (no data)
-def removevalues(img):
-  value_0 = img.neq(0)
-  value_255 = img.neq(255)
-  return img.updateMask(value_0).updateMask(value_255).divide(10).int()
-
-# Define a palette for the distinct land cover classes.
-glc30Palette = [
-  &#39;ff02d0&#39;, # 1-Cultaved Lands
-  &#39;147749&#39;, # 2-Forest    
-  &#39;a9d05f&#39;, # 3-Grassland  
-  &#39;3eb370&#39;, # 4-Shrublands
-  &#39;7ecef4&#39;, # 5-Wetlands
-  &#39;00569a&#39;, # 6-Water bodies          
-  &#39;6f6f6f&#39;,  # 7-Tundra
-  &#39;911818&#39;, # 8-Artificial Surfaces
-  &#39;cacaca&#39;, # 9-Bareland    
-  &#39;f9f3c1&#39;, # 10-Permanent snow and ice  
-]
-
-# Load the dataset
-glc30_lima = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
-               .map(removevalues).max().clip(eeLima)
-
-vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}</code></pre>
-<center>
-<img src='https://user-images.githubusercontent.com/16768318/73024489-9a338080-3e25-11ea-84d7-3dd6c31a9744.png' width='90%'>
-</center>
-<pre class="python"><code># Ecuador 
-Ecuador = ee.Geometry.Polygon([[-79.25,0.10],[-79.25,0.47],[-79.76,0.47],[-79.76,0.10], [-79.25,0.10]])
-center_ecu = Ecuador.centroid().getInfo()[&#39;coordinates&#39;]
-center_ecu.reverse()
-# Load the dataset
-glc30_ecuador = ee.ImageCollection(&#39;users/csaybar/GLC30PERU&#39;)\
-               .map(removevalues).max().clip(Ecuador)
-
-vizparams = {&#39;min&#39;:1,&#39;max&#39;:10,&#39;palette&#39;:glc30Palette}
-Mapdisplay(center_ecu,{&#39;glc30&#39;:glc30_ecuador.getMapId(vizparams)},zoom_start=10)</code></pre>
-<center>
-<img src='https://user-images.githubusercontent.com/16768318/73024490-9a338080-3e25-11ea-98e0-82ca11446130.jpg' width='90%'>
-</center>
-</div>
-<div id="export-the-results-of-ee-to-google-drive" class="section level2">
-<h2>7. Export the results of EE to Google Drive</h2>
-<pre class="python"><code># Export the image, specifying scale and region.
-task = ee.batch.Export.image.toDrive(**{
-    &#39;image&#39;: glc30,
-    &#39;description&#39;: &#39;GLC30LIMA&#39;,
-    &#39;folder&#39;:&#39;GLC30&#39;,
-    &#39;scale&#39;: 30,
-    &#39;region&#39;: eeLima.geometry().getInfo()[&#39;coordinates&#39;]
-})
-task.start()</code></pre>
-<p>Monitoring your Export</p>
-<pre class="python"><code>import time 
-while task.active():
-  print(&#39;Polling for task (id: {}).&#39;.format(task.id))
-  time.sleep(5)</code></pre>
-<pre class="python"><code># Export the image, specifying scale and region.
-task = ee.batch.Export.image.toDrive(**{
-    &#39;image&#39;: glc30,
-    &#39;description&#39;: &#39;GLC30ECUADOR&#39;,
-    &#39;folder&#39;:&#39;GLC30&#39;,
-    &#39;scale&#39;: 30,
-    &#39;region&#39;: Ecuador.getInfo()[&#39;coordinates&#39;]
-})
-task.start()</code></pre>
 </div>
 
                         </div>
@@ -621,19 +570,6 @@ task.start()</code></pre>
                 
                 <div class="item same-height-row clearfix">
                     <div class="image same-height-always">
-                        <a href="/blog/2020/06/15/rgee_02_io/">
-                          
-                            <img src="/img/banners/07_preprocessing.gif" class="img-responsive" alt="rgee example #2: Satellite image preprocessing">
-                          
-                        </a>
-                    </div>
-                    <div class="name same-height-always">
-                        <h5><a href="/blog/2020/06/15/rgee_02_io/">rgee example #2: Satellite image preprocessing</a></h5>
-                    </div>
-                </div>
-                
-                <div class="item same-height-row clearfix">
-                    <div class="image same-height-always">
                         <a href="/blog/2020/06/10/rgee_01_worldmap/">
                           
                             <img src="/img/banners/06_lstmap.png" class="img-responsive" alt="rgee example #1: Creating static and interactive maps">
@@ -642,6 +578,19 @@ task.start()</code></pre>
                     </div>
                     <div class="name same-height-always">
                         <h5><a href="/blog/2020/06/10/rgee_01_worldmap/">rgee example #1: Creating static and interactive maps</a></h5>
+                    </div>
+                </div>
+                
+                <div class="item same-height-row clearfix">
+                    <div class="image same-height-always">
+                        <a href="/blog/2020/06/10/rgee_02_io/">
+                          
+                            <img src="/img/banners/07_preprocessing.png" class="img-responsive" alt="rgee example #2: Preprocessing Images with Google Earth Engine from R">
+                          
+                        </a>
+                    </div>
+                    <div class="name same-height-always">
+                        <h5><a href="/blog/2020/06/10/rgee_02_io/">rgee example #2: Preprocessing Images with Google Earth Engine from R</a></h5>
                     </div>
                 </div>
                 

@@ -1,0 +1,272 @@
+---
+title: "rgee example #2: Satellite image preprocessing"
+subtitle: "Connecting Google Earth Engine with sf, stars, and gdalcubes"
+author: "Cesar Aybar"
+date: '2020-06-15'
+banner: "img/banners/07_preprocessing.gif"
+tags: ["Earth Engine", "mapedit", "raster", "tmap"]
+---
+
+
+
+<p><a href="https://github.com/r-spatial/rgee/blob/examples/FeatureCollection/search_by_buffer_distance.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_01_search_by_buffer_distance.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/convolutions.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_02_convolutions.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/FeatureCollection/idw_interpolation.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_03_idw_interpolation.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/spectral_unmixing.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_04_spectral_unmixing.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Algorithms/CloudMasking/sentinel-2.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_05_sentinel2.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/canny_edge_detector.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_06_canny_edge_detector.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/cumulative_cost_mapping.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_07_cumulative_cost_mapping.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/image/zero_crossing.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_08_zero_crossing.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples//Visualization/hillshade.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_09_hillshade.png" height="100" hspace="5"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/styled_layer_descriptors.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_10_styled_layer_descriptors.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/terrain_visualization.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_11_terrain_visualization.png" height="100" hspace="5"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/us_census_counties.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_12_us_census_counties.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/global_power_plant_database.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_13_global_power_plant_database.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Vectors/landsat_wrs2_grid.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_14_landsat_wr2_grid.png" height="100" hspace="4"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Datasets/Water/jrc_metadata.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_15_jrc_metadata.png" height="100"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples//Visualization/visualizing_geometries.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_16_visualizing_geometries.png" height="100" hspace="1"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Algorithms/center_pivot_irrigation_detector.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_17_center_pivot_irrigation_detector.png" height="100" hspace="2"/></a>
+<a href="https://github.com/r-spatial/rgee/blob/examples/Visualization/image_color_ramp.R"><img src="https://raw.githubusercontent.com/ryali93/rgee_readme_icons/master/images/img_18_image_color_ramp.png" height="100"/></a></p>
+<p>Image preprocessing (i.e. download, reprojection, mosaicking, resize, bad pixels control and composite) has always been a time-consuming activity. Although R offers incredible open-source “API packages” to easily get geospatial resources (<a href="https://github.com/ropensci/MODIStsp">modistsp</a>, <a href="https://github.com/16EAGLE/getSpatialData">getSpatialData</a>, <a href="https://github.com/jhollist/elevatr">elevation</a>, <a href="https://github.com/phiala/landsat">landsat</a> and so on …), these still require that users count with competent computers (and high-end for users that want to analysis large areas). Since this, a privilege that many people can’t simply afford.</p>
+<p>I love <a href="https://earthengine.google.com/">Google Earth Engine</a> because democratizes access to high performance computing, enabling image preprocessing and analysis in the worst circumstances (e.g. in the middle of the Amazon with a Pentium IV laptop and weak internet access conditions). In this second tutorial (see the first <a href="https://csaybar.github.io/blog/2020/06/10/rgee_01_worldmap/">here</a>) of rgee, I would show you how to <strong>preprocess and download MODIS and Sentinel images</strong> to anywhere at any time <strong>without consuming your computational resources</strong>. In addition you will also learn to connect <strong>rgee</strong> to other R packages such as <a href="https://github.com/r-spatial/stars">stars</a>, and <a href="https://github.com/rspatial/raster">raster</a>.</p>
+<div id="what-is-rgee" class="section level2">
+<h2>What is rgee?</h2>
+<p><a href="https://github.com/r-spatial/rgee">rgee</a> is a bindings package for <a href="https://earthengine.google.com/">Google Earth Engine</a> (GEE). As you probably know, <a href="https://earthengine.google.com/">GEE</a> is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google’s infrastructure. While the use of GEE has spread around different earth sciences communities. It has been relegated from R spatial users due that Google only offers native support for Python and JavaScript programming languages.</p>
+<p>To offer support for R, <strong>rgee</strong> wraps the <a href="https://github.com/google/earthengine-api">Earth Engine Python API</a> using <a href="https://rstudio.github.io/reticulate/">reticulate</a>. In contrast with native client libraries, <a href="https://github.com/r-spatial/rgee">rgee</a> adds several new features such as (i) new I/O design, (ii) interactive map display, (iii) easy extraction of time series, (iv) asset management interface, and (v) metadata display. The image bellow show you how <a href="https://github.com/r-spatial/rgee">rgee</a> currently works.</p>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/71569603-3341d680-2ac8-11ea-8787-4dd1fbba326f.png" width = 100%>
+</center>
+<p>Install the rgee package from GitHub is quite simple, you just have to run in your R console as follows:</p>
+<pre class="r"><code>remotes::install_github(&quot;r-spatial/rgee&quot;)</code></pre>
+<p>Prior to using rgee you will need to install a Python version higher than 3.5 in your system. rgee counts with an installation function (<a href="https://r-spatial.github.io/rgee/reference/ee_install.html">ee_install</a>) which helps to setup rgee correctly:</p>
+<pre class="r"><code>library(rgee)
+ee_install()</code></pre>
+<p>For further information of rgee. Visit the website: <a href="https://r-spatial.github.io/rgee/">https://r-spatial.github.io/rgee/</a></p>
+</div>
+<div id="tutorial-2.1-create-a-monthly-modis-ndvi-composite-mod12a2-v6" class="section level2">
+<h2>Tutorial 2.1: Create a Monthly MODIS-NDVI composite (MOD12A2 V6)</h2>
+<p>Load the necessary packages for the tutorial.</p>
+<pre class="r"><code>library(cptcity)
+library(raster)
+library(stars)
+library(rgee)
+library(sf)</code></pre>
+<p>Initialize the Earth Engine session and load Google Drive credentials.</p>
+<pre class="r"><code>ee_Initialize(drive = TRUE)</code></pre>
+<p>Define a region of interest with <code>sf</code>. Then use the <code>sf_as_ee</code> function to convert the sf object to an Earth Engine object (<code>ee$FeatureCollection'</code>).</p>
+<pre class="r"><code>roi &lt;- st_read(system.file(&quot;shape/nc.shp&quot;, package=&quot;sf&quot;)) %&gt;% 
+  st_bbox() %&gt;% 
+  st_as_sfc() %&gt;% 
+  sf_as_ee()</code></pre>
+<p>Search into the Earth Engine’s public data archive. We use the <a href="https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD13A2">MOD13A2 V6 product</a>. It is 16-day period product that provides two vegetation indices: NDVI and EVI.</p>
+<pre class="r"><code>ee_search_dataset() %&gt;%
+  ee_search_title(&quot;mod13&quot;) %&gt;%
+  ee_search_title(&quot;1km&quot;) %&gt;%
+  ee_search_display()                 
+
+modis_ndvi &lt;- ee$ImageCollection(&quot;MODIS/006/MOD13A2&quot;)</code></pre>
+<p><a href=""><strong>MODIS</strong></a> makes it simple to filter out poor quality pixels thanks to a quality control bits band (<strong>DetailedQA</strong>). The following function helps us to distinct between <strong>good data</strong> (bit == …00) and <strong>marginal data</strong> (bit != …00).</p>
+<pre class="r"><code>getQABits &lt;- function(image, qa) {
+  # Convert binary (character) to decimal (little endian)
+  qa &lt;- sum(2^(which(rev(unlist(strsplit(as.character(qa), &quot;&quot;)) == 1))-1))
+  # Return a mask band image, giving the qa value.
+  image$bitwiseAnd(qa)$lt(1)
+}</code></pre>
+<p>Using <code>getQABits</code> we construct a single-argument function (<code>mod13A2_clean</code>) that is used to map over all the images of the collection (<code>modis_ndvi</code>).</p>
+<pre class="r"><code>mod13A2_clean &lt;- function(img) {
+  # Extract the NDVI band
+  ndvi_values &lt;- img$select(&quot;NDVI&quot;)
+  
+  # Extract the quality band
+  ndvi_qa &lt;- img$select(&quot;SummaryQA&quot;)
+  
+  # Select pixels to mask
+  quality_mask &lt;- getQABits(ndvi_qa, &quot;11&quot;)
+  
+  # Mask pixels with value zero.
+  ndvi_values$updateMask(quality_mask)
+}</code></pre>
+<p>That’s all!, we have everything to create the <strong>monthly NDVI composite</strong>. We carry out the following steps:</p>
+<ul>
+<li>Filter the collection (<code>modis_ndvi</code>) by a date range.</li>
+<li>Select images only for January.</li>
+<li>Map over the collection (using <code>mod13A2_clean</code>) to remove bad pixels.</li>
+<li>Apply a temporal reducer function (median).</li>
+</ul>
+<pre class="r"><code>ndvi_composite &lt;- modis_ndvi$
+  filter(ee$Filter$date(&#39;2001-01-01&#39;, &#39;2019-12-31&#39;))$
+  filter(ee$Filter$calendarRange(1, field = &quot;month&quot;))$
+  map(mod13A2_clean)$
+  median()</code></pre>
+<p><strong>OPTIONAL:</strong> Use <code>Map</code> to display the results in an interactive way.</p>
+<pre class="r"><code>scale &lt;- 0.0001
+Map$setCenter(lon = -79,lat = 35,zoom = 6)
+Map$addLayer(
+  eeObject = ndvi_composite, 
+  visParams = list(
+    min = 0.2 / scale, 
+    max = 0.7 / scale,
+    palette = cpt(&quot;grass_ndvi&quot;, 10)
+  )
+) + Map$addLayer(roi)</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84594061-4138a900-ae15-11ea-815b-e6f123139a1f.png" width=90%>
+</center>
+<p><br></p>
+<p>To download the results we use the function <code>ee_as_raster</code>. This function permit us to convert an <code>ee$Image</code> into a raster object. The <code>via</code> argument define the download path, three methods are proposed:</p>
+<ul>
+<li><strong>getInfo :</strong> Retrieve information through a REST Call. It is the faster method although with a limitation of 262144 pixels for image.</li>
+<li><strong>drive: </strong> Use Google Drive as a intermediate container to export large images.</li>
+<li><strong>gcs: </strong> Use Google Cloud Storage rather than Google Drive.</li>
+</ul>
+<p>See the <a href="https://r-spatial.github.io/rgee/reference/ee_as_raster.html">documentation</a> to get more details.</p>
+<pre class="r"><code>mod_ndvi &lt;- ee_as_raster(
+  image = ndvi_composite,
+  region = roi$geometry(),
+  scale = 1000,
+  via = &#39;drive&#39;
+)</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84625282-9376da00-aea8-11ea-9543-56412bb532aa.png" width=90%>
+</center>
+<p><strong>This is the end of the part 1</strong>. You can find the full code <a href="https://gist.github.com/csaybar/3f2f95790bf645a2da3ad82879bf8c39">here</a>. If you are interesting in more methods to export data from Google Earth Engine see the <a href="https://r-spatial.github.io/rgee/articles/setup.html#import-and-export-spatial-data-using-rgee">details</a> section.</p>
+</div>
+<div id="tutorial-2.2-download-multiple-sentinel-2-ndvi-images" class="section level2">
+<h2>Tutorial 2.2: Download multiple Sentinel-2 NDVI images</h2>
+<p>Load the necessary packages for the tutorial</p>
+<pre class="r"><code>library(stars)
+library(rgee)
+library(tmap)</code></pre>
+<p>Initialize the Earth Engine session and load Google Drive credentials.</p>
+<pre class="r"><code>ee_Initialize(drive = TRUE)</code></pre>
+<p>Define a region of interest with <code>ee$Geometry$Point</code>. You can define the place that you want!.</p>
+<pre class="r"><code>ocoña &lt;- ee$Geometry$Point(c(-73.19641, -16.21995))</code></pre>
+<p>Search the Sentinel-2 MSI dataset into the Earth Engine’s public data archive.</p>
+<pre class="r"><code>ee_search_dataset() %&gt;%
+  ee_search_title(&quot;sentinel&quot;) %&gt;%
+  ee_search_title(&quot;MSI&quot;) %&gt;%
+  ee_search_display()                 
+
+s2 &lt;- ee$ImageCollection(&quot;COPERNICUS/S2_SR&quot;)</code></pre>
+<p><a href="">Sentinel-2</a> as well as <a href="">MODIS</a> distributes a quality control bits band (<strong>QA60</strong>). The difference with the previous example is that the bits of interests here are 10 (opaque clouds) and 11 (cirrus cloud) rather than 0 and 1. We recycle the function <code>getQABits</code> of the previous example with no changes.</p>
+<pre class="r"><code>getQABits &lt;- function(image, qa) {
+  # Convert decimal (character) to decimal (little endian)
+  qa &lt;- sum(2^(which(rev(unlist(strsplit(as.character(qa), &quot;&quot;)) == 1))-1))
+  # Return a single band image of the extracted QA bits, giving the qa value.
+  image$bitwiseAnd(qa)$lt(1)
+}</code></pre>
+<p>Using <code>getQABits</code> we construct a single-argument function (<code>s2_clean</code>) that is used to map over all the images of the collection (<code>s2</code>).</p>
+<pre class="r"><code>s2_clean &lt;- function(img) {
+  # Select only band of interest, for instance, B2,B3,B4,B8
+  img_band_selected &lt;- img$select(&quot;B[2-4|8]&quot;)
+  
+  # quality band
+  ndvi_qa &lt;- img$select(&quot;QA60&quot;)
+
+  # Select pixels to mask
+  quality_mask &lt;- getQABits(ndvi_qa, &quot;110000000000&quot;)
+  
+  # Mask pixels with value zero.
+  img_band_selected$updateMask(quality_mask)
+}</code></pre>
+<p>we are ready to preprocessing and download our images!</p>
+<ol style="list-style-type: decimal">
+<li>Select S2 images just for the Ocoña Valley region.</li>
+<li>Remove images with a cloudy-scene pixel percentage greater than 20.</li>
+<li>Select images from 2017-01-01 to the present day.</li>
+<li>Select images only for June.</li>
+<li>Map over the collection to remove cloud pixels.</li>
+</ol>
+<pre class="r"><code>s2_ocona &lt;- s2$
+  filterBounds(ocoña)$
+  filter(ee$Filter$lte(&quot;CLOUDY_PIXEL_PERCENTAGE&quot;, 20))$
+  filter(ee$Filter$date(&#39;2017-01-01&#39;, Sys.Date()))$
+  filter(ee$Filter$calendarRange(6, field = &quot;month&quot;))$
+  map(sentinel_clean)</code></pre>
+<p>Get the dates and IDs of the selected images.</p>
+<pre class="r"><code>nimages &lt;- s2_ocona$size()$getInfo()
+ic_date &lt;- ee_get_date_ic(s2_ocona)</code></pre>
+<p><strong>OPTIONAL:</strong> Use <code>Map</code> to display the results in an interactive way.</p>
+<pre class="r"><code>Map$centerObject(ocona,zoom = 8)
+s2_img_list &lt;- list() 
+for (index in seq_len(nimages)) {
+  py_index &lt;- index - 1
+  s2_img &lt;- ee$Image(s2_ocona$toList(1, py_index)$get(0))
+  s2_img_list[[index]] &lt;- Map$addLayer(
+    eeObject = s2_img,
+    visParams = list(min = -0.1, max = 0.8, palette = cpt(&quot;grass_ndvi&quot;, 10)),
+    name = ic_date$id[index]
+  )
+}
+Reduce(&#39;+&#39;, s2_img_list)</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84626248-6297a480-aeaa-11ea-9a8c-279ab504b0c7.png" width=90%>
+</center>
+<p><br>
+To download the results we use the function <code>ee_imagecollection_to_local</code>. This function permits us to download an <code>ee$ImageCollection</code>.</p>
+<pre class="r"><code>s2_ic_local &lt;- ee_imagecollection_to_local(
+  ic = s2_ocona,
+  scale = 10,
+  region = ocona,
+  via = &#39;drive&#39;
+)</code></pre>
+<p><strong>OPTIONAL 2</strong>: Using <code>tmap</code> and <code>stars</code> we can create beautiful animation very quickly!</p>
+<p>First, read the images (<code>s2_ic_local</code>) with <code>read_stars</code> and create a raster data cube with dimensions (x, y, NDVI).</p>
+<pre class="r"><code>s2_stars &lt;- s2_ic_local %&gt;% 
+  read_stars %&gt;% 
+  merge %&gt;% 
+  st_set_dimensions(names = c(&quot;x&quot;, &quot;y&quot;, &quot;NDVI&quot;)) %&gt;% 
+  `names&lt;-`(&quot;NDVI&quot;)</code></pre>
+<p>Define the titles to display on each image!</p>
+<pre class="r"><code>s2_stars %&gt;% 
+  st_get_dimension_values(3) %&gt;% 
+  substr(
+    start = 2,
+    stop = 9
+  ) %&gt;% 
+  as.Date(format=&quot;%Y%m%d&quot;) %&gt;% 
+  as.character() %&gt;% 
+  sprintf(&quot;Ocoña Valley, Arequipa, Peru: %s&quot;, .) -&gt;  
+  s2_new_names</code></pre>
+<p>Putting all together in a tmap object!</p>
+<pre class="r"><code>m1 &lt;- tm_shape(s2_stars) +
+  tm_raster(
+    palette = cpt(&quot;grass_ndvi&quot;, 20),
+    n = 20, 
+    title = &quot;NDVI&quot;,
+    style = &quot;fisher&quot;) +
+  tmap_style(style = &quot;natural&quot;) +
+  tm_facets(nrow = 1, ncol = 1) +
+  tm_layout(
+    frame.lwd = 2,
+    panel.label.bg.color = NA,
+    attr.outside = TRUE,
+    panel.show = FALSE,
+    legend.title.size = 1,
+    legend.title.fontface = 2,
+    legend.text.size = 0.7,
+    legend.frame = FALSE,
+    legend.outside = TRUE,
+    legend.position = c(0.20, 0.15),
+    legend.bg.color = &quot;white&quot;,
+    legend.bg.alpha = 1,
+    main.title = sprintf(&quot;Ocoña Valley, Arequipa, Peru: %s&quot;, s2_new_names),
+    main.title.size = 1.2,
+    main.title.fontface = 2
+  )+
+  tm_credits(
+    text = &quot;Source: Sentinel-2 MSI: MultiSpectral Instrument, Level-2A&quot;,
+    size = 1,
+    just = &quot;right&quot;
+  ) 
+
+# grDevices::dev.size(&quot;px&quot;)
+tmap_animation(tm = m1, width = 699*3,height = 555*3,delay = 100)</code></pre>
+<center>
+<img src="https://user-images.githubusercontent.com/16768318/84626755-506a3600-aeab-11ea-8289-02a7081eca25.gif" width=90%>
+</center>
+<p><strong>This is the end of the part 2</strong>. You can find the full code <a href="https://gist.github.com/csaybar/4470a7a5dfe04a79a6a32979703bcfd5">here</a>. The next week I will write a little about how to integrate <code>rgee</code> and <code>gstat</code> to do spatial interpolation.</p>
+<div id="more-than-250-examples-using-google-earth-engine-with-r-are-available-here" class="section level4">
+<h4>More than 250+ examples using Google Earth Engine with R are available <a href="http://csaybar.github.io/rgee-examples/">here</a></h4>
+</div>
+</div>
