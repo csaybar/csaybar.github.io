@@ -2,192 +2,192 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on csaybar</title>
-    <link>/tags/</link>
+    <link>http://csaybar.github.io/tags/</link>
     <description>Recent content in Tags on csaybar</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 10 Jun 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 15 Jun 2020 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="http://csaybar.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Earth Engine</title>
-      <link>/tags/earth-engine/</link>
-      <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+      <link>http://csaybar.github.io/tags/earth-engine/</link>
+      <pubDate>Mon, 15 Jun 2020 00:00:00 +0000</pubDate>
       
-      <guid>/tags/earth-engine/</guid>
+      <guid>http://csaybar.github.io/tags/earth-engine/</guid>
       <description></description>
     </item>
     
     <item>
       <title>mapedit</title>
-      <link>/tags/mapedit/</link>
-      <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+      <link>http://csaybar.github.io/tags/mapedit/</link>
+      <pubDate>Mon, 15 Jun 2020 00:00:00 +0000</pubDate>
       
-      <guid>/tags/mapedit/</guid>
+      <guid>http://csaybar.github.io/tags/mapedit/</guid>
       <description></description>
     </item>
     
     <item>
       <title>raster</title>
-      <link>/tags/raster/</link>
-      <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+      <link>http://csaybar.github.io/tags/raster/</link>
+      <pubDate>Mon, 15 Jun 2020 00:00:00 +0000</pubDate>
       
-      <guid>/tags/raster/</guid>
+      <guid>http://csaybar.github.io/tags/raster/</guid>
       <description></description>
     </item>
     
     <item>
       <title>tmap</title>
-      <link>/tags/tmap/</link>
-      <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+      <link>http://csaybar.github.io/tags/tmap/</link>
+      <pubDate>Mon, 15 Jun 2020 00:00:00 +0000</pubDate>
       
-      <guid>/tags/tmap/</guid>
+      <guid>http://csaybar.github.io/tags/tmap/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Google Earth Engine</title>
-      <link>/tags/google-earth-engine/</link>
+      <link>http://csaybar.github.io/tags/google-earth-engine/</link>
       <pubDate>Thu, 10 Oct 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/google-earth-engine/</guid>
+      <guid>http://csaybar.github.io/tags/google-earth-engine/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Python</title>
-      <link>/tags/python/</link>
+      <link>http://csaybar.github.io/tags/python/</link>
       <pubDate>Thu, 10 Oct 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/python/</guid>
+      <guid>http://csaybar.github.io/tags/python/</guid>
       <description></description>
     </item>
     
     <item>
       <title>folium</title>
-      <link>/tags/folium/</link>
+      <link>http://csaybar.github.io/tags/folium/</link>
       <pubDate>Thu, 10 Oct 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/folium/</guid>
+      <guid>http://csaybar.github.io/tags/folium/</guid>
       <description></description>
     </item>
     
     <item>
       <title>GEE</title>
-      <link>/tags/gee/</link>
+      <link>http://csaybar.github.io/tags/gee/</link>
       <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/gee/</guid>
+      <guid>http://csaybar.github.io/tags/gee/</guid>
       <description></description>
     </item>
     
     <item>
       <title>keras</title>
-      <link>/tags/keras/</link>
+      <link>http://csaybar.github.io/tags/keras/</link>
       <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/keras/</guid>
+      <guid>http://csaybar.github.io/tags/keras/</guid>
       <description></description>
     </item>
     
     <item>
       <title>tensorflow</title>
-      <link>/tags/tensorflow/</link>
+      <link>http://csaybar.github.io/tags/tensorflow/</link>
       <pubDate>Fri, 21 Jun 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/tensorflow/</guid>
+      <guid>http://csaybar.github.io/tags/tensorflow/</guid>
       <description></description>
     </item>
     
     <item>
       <title>featuretools</title>
-      <link>/tags/featuretools/</link>
+      <link>http://csaybar.github.io/tags/featuretools/</link>
       <pubDate>Sun, 19 May 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/featuretools/</guid>
+      <guid>http://csaybar.github.io/tags/featuretools/</guid>
       <description></description>
     </item>
     
     <item>
       <title>lightgbm</title>
-      <link>/tags/lightgbm/</link>
+      <link>http://csaybar.github.io/tags/lightgbm/</link>
       <pubDate>Sun, 19 May 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/lightgbm/</guid>
+      <guid>http://csaybar.github.io/tags/lightgbm/</guid>
       <description></description>
     </item>
     
     <item>
       <title>shap</title>
-      <link>/tags/shap/</link>
+      <link>http://csaybar.github.io/tags/shap/</link>
       <pubDate>Sun, 19 May 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/shap/</guid>
+      <guid>http://csaybar.github.io/tags/shap/</guid>
       <description></description>
     </item>
     
     <item>
       <title>sklearn</title>
-      <link>/tags/sklearn/</link>
+      <link>http://csaybar.github.io/tags/sklearn/</link>
       <pubDate>Sun, 19 May 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/sklearn/</guid>
+      <guid>http://csaybar.github.io/tags/sklearn/</guid>
       <description></description>
     </item>
     
     <item>
       <title>plotly</title>
-      <link>/tags/plotly/</link>
+      <link>http://csaybar.github.io/tags/plotly/</link>
       <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/plotly/</guid>
+      <guid>http://csaybar.github.io/tags/plotly/</guid>
       <description></description>
     </item>
     
     <item>
       <title>rnaturalearth</title>
-      <link>/tags/rnaturalearth/</link>
+      <link>http://csaybar.github.io/tags/rnaturalearth/</link>
       <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/rnaturalearth/</guid>
+      <guid>http://csaybar.github.io/tags/rnaturalearth/</guid>
       <description></description>
     </item>
     
     <item>
       <title>tidyverse</title>
-      <link>/tags/tidyverse/</link>
+      <link>http://csaybar.github.io/tags/tidyverse/</link>
       <pubDate>Sat, 12 Jan 2019 00:00:00 +0000</pubDate>
       
-      <guid>/tags/tidyverse/</guid>
+      <guid>http://csaybar.github.io/tags/tidyverse/</guid>
       <description></description>
     </item>
     
     <item>
       <title>GdalUtils</title>
-      <link>/tags/gdalutils/</link>
+      <link>http://csaybar.github.io/tags/gdalutils/</link>
       <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
       
-      <guid>/tags/gdalutils/</guid>
+      <guid>http://csaybar.github.io/tags/gdalutils/</guid>
       <description></description>
     </item>
     
     <item>
       <title>furrr</title>
-      <link>/tags/furrr/</link>
+      <link>http://csaybar.github.io/tags/furrr/</link>
       <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
       
-      <guid>/tags/furrr/</guid>
+      <guid>http://csaybar.github.io/tags/furrr/</guid>
       <description></description>
     </item>
     
     <item>
       <title>rasterVIS</title>
-      <link>/tags/rastervis/</link>
+      <link>http://csaybar.github.io/tags/rastervis/</link>
       <pubDate>Wed, 05 Dec 2018 00:00:00 +0000</pubDate>
       
-      <guid>/tags/rastervis/</guid>
+      <guid>http://csaybar.github.io/tags/rastervis/</guid>
       <description></description>
     </item>
     
