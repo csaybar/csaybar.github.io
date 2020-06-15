@@ -1,10 +1,10 @@
 ---
 title: "rgee example #2: Satellite image preprocessing"
-subtitle: "Connecting Google Earth Engine with sf, stars, and gdalcubes"
+subtitle: "Connecting Google Earth Engine with sf and stars"
 author: "Cesar Aybar"
 date: '2020-06-15'
 banner: "img/banners/07_preprocessing.gif"
-tags: ["Earth Engine", "mapedit", "raster", "tmap"]
+tags: ["Earth Engine", "stars", "raster", "tmap"]
 ---
 
 ```{r setup, include=FALSE}

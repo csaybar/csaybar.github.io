@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>sklearn on csaybar</title>
-    <link>http://csaybar.github.io/tags/sklearn/</link>
+    <link>/tags/sklearn/</link>
     <description>Recent content in sklearn on csaybar</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 19 May 2019 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="http://csaybar.github.io/tags/sklearn/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/sklearn/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Head Start Data Science I: Titanic Challenge</title>
-      <link>http://csaybar.github.io/blog/2019/05/19/titanic/</link>
+      <link>/blog/2019/05/19/titanic/</link>
       <pubDate>Sun, 19 May 2019 00:00:00 +0000</pubDate>
       
-      <guid>http://csaybar.github.io/blog/2019/05/19/titanic/</guid>
+      <guid>/blog/2019/05/19/titanic/</guid>
       <description>1. Introduction The Titanic challenge is an excellent way to practice the necessary skills required for ML. In my first attempts, I blindly applied a well-known ML method (Lightgbm); however, I couldn’t go up over the Top 20% :(. To have success in this competition you need to realize an acute feature engineering that takes into account the distribution on train and test dataset. This post is the perfect opportunity to share with you my Python package preml and show how can you BEAT THE 97% OF LB.</description>
     </item>
     
